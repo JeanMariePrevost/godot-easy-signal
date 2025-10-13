@@ -22,13 +22,11 @@ static func new_typed(payload_signature: Array[String]) -> BetterSignal:
 
 ## Creates a new BetterSignal that does not accept any payload.
 static func new_void() -> BetterSignal:
-    # TO BE IMPLEMENTED
     return BetterSignal.new(TYPE_NIL)
 
 
 ## Creates a new BetterSignal that accepts any payload.
 static func new_untyped() -> BetterSignal:
-    # TO BE IMPLEMENTED
     return BetterSignal.new(["Variant"])
 
 
@@ -137,22 +135,35 @@ func _init(payload_signature: Variant = TYPE_NIL):
 
 
 ## Adds a listener to the signal
-##
-## A callable cannot be added more than once
-func add(callback: Callable) -> void:
-    if has(callback):
-        return
-    _listeners.append(BetterSignalListener.new(callback, self))
+## Adding the same callable more than once has no effect
+func add(callback: Callable) -> BetterSignalListener:
+    var listener: BetterSignalListener = find(callback)
+    if listener != null:
+        return listener
+    listener = BetterSignalListener.new(callback, self)
+    _listeners.append(listener)
+    return listener
 
 
 ## Emits the signal with the given payload
 func emit(payload: Variant) -> void:
+    # TODO: Implement priority (needs constant sorting? On changes? We need to detect changes in the listeners? They report back?..)
     for listener in _listeners:
-        listener.invoke_callable(payload)
+        listener.emit_to(payload)
+
+
+## Removes a listener from the signal, by its callable
+## Returns true if a listener was removed, false otherwise
+func remove(callback: Callable) -> bool:
+    for listener in _listeners:
+        if listener.has_callable(callback):
+            _listeners.erase(listener)
+            return true
+    return false
 
 
 ## Removes all listeners from the signal
-func clear() -> void:
+func remove_all() -> void:
     _listeners.clear()
 
 
@@ -167,3 +178,12 @@ func has(callback: Callable) -> bool:
         if listener.has_callable(callback):
             return true
     return false
+
+
+## Finds a listener by its callable
+## Returns the listener if found, null otherwise
+func find(callback: Callable) -> BetterSignalListener:
+    for listener in _listeners:
+        if listener.has_callable(callback):
+            return listener
+    return null
