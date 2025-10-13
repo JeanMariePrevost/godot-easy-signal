@@ -19,8 +19,8 @@ func _init(callable: Callable, owner_signal: BetterSignal):
 ##
 ## Internally decrements the uses_left if it is not unlimited
 ## Removes the listener from its signal when uses_left reaches 0
-func emit_to(payload: Variant) -> void:
-    _callable.call(payload)
+func emit_to(args: Array[Variant]) -> void:
+    _callable.callv(args)
     if _uses_left != -1:
         _uses_left -= 1
         if _uses_left == 0:

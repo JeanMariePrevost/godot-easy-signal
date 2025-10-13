@@ -152,7 +152,7 @@ func add(callback: Callable) -> BetterSignalListener:
     var best_effort_validation: Dictionary = _weakly_validate_callback(callback)
     print("Best effort validation: ", best_effort_validation)
     if not best_effort_validation["valid"]:
-        push_error("Callback could not be added. " + best_effort_validation["reason"])
+        push_error('Callback "' + callback.get_method() + '" could not be added. ' + best_effort_validation["reason"])
         return null
 
     listener = BetterSignalListener.new(callback, self)
@@ -161,10 +161,18 @@ func add(callback: Callable) -> BetterSignalListener:
 
 
 ## Emits the signal with the given payload
-func emit(payload: Variant) -> void:
+func emit(...args: Array[Variant]) -> void:
     # TODO: Implement priority (needs constant sorting? On changes? We need to detect changes in the listeners? They report back?..)
+
+    # Validate payload
+    var validation_result: Dictionary = validate_payload(args)
+
+    if not validation_result["valid"]:
+        push_error("Payload could not be emitted. " + validation_result["reason"])
+        return
+
     for listener in _listeners:
-        listener.emit_to(payload)
+        listener.emit_to(args)
 
 
 ## Removes a listener from the signal, by its callable
@@ -218,7 +226,7 @@ func _weakly_validate_callback(callback: Callable) -> Dictionary:
 
     # Validate argument count
     if callback.get_argument_count() != _argument_count:
-        return {"valid": false, "reason": "Argument count mismatch"}
+        return {"valid": false, "reason": "Argument count mismatch (expected " + str(_argument_count) + ", got " + str(callback.get_argument_count()) + ")"}
 
     # Attempt to validate argument types (works for named functions only I believe?)
     var target_object = callback.get_object()
@@ -248,7 +256,22 @@ func _weakly_validate_callback(callback: Callable) -> Dictionary:
                 # NOTE: A "Nil" type argument is an "untyped Variant", not "void"
                 if declared_type != "Nil" and expected_type != "Nil" and declared_type != expected_type:
                     return {"valid": false, "reason": "Argument type mismatch (expected " + expected_type + ", got " + declared_type + ")"}
-            return {"valid": true, "reason": "Callable is a valid method (introspectable)"}
+            return {"valid": true, "reason": "Callable is a valid method with the expected signature (introspectable)"}
 
     # If the method wasn't found in the script, assume it's external or native
     return {"valid": true, "reason": "Callable is external or native (not introspectable)"}
+
+
+func validate_payload(payload: Array[Variant]) -> Dictionary:
+    # Check argument count
+    if payload.size() != _argument_count:
+        return {"valid": false, "reason": "Argument count mismatch (expected " + str(_argument_count) + ", got " + str(payload.size()) + ")"}
+
+    # Check argument types
+    for i in range(_argument_count):
+        var expected_type: String = _argument_types[i]
+        var declared_type: String = type_string(typeof(payload[i]))
+        if declared_type != "Nil" and expected_type != "Nil" and declared_type != expected_type:
+            return {"valid": false, "reason": "Argument type mismatch (expected " + expected_type + ", got " + declared_type + ")"}
+
+    return {"valid": true, "reason": "Payload is valid"}
