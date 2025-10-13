@@ -33,13 +33,15 @@ static func new_untyped() -> BetterSignal:
 
 
 # ===============================
-# Body
+# Initialization
 # ===============================
 
 var _argument_types: Array[String]  ## The types of the arguments, where TYPE_OBJECT is also the basis for any custom type
 var _argument_count: int = 0  ## The number of arguments
 var _is_variant: bool = false  ## Whether the signal is a variant signal (accepts any arguments)
 var _is_void: bool = false  ## Whether the signal is a void signal (accepts no arguments)
+
+var _listeners: Array[BetterSignalListener] = []
 
 
 func get_argument_types() -> Array[String]:
@@ -127,3 +129,41 @@ func _init(payload_signature: Variant = TYPE_NIL):
     _is_variant = false
     _is_void = false
     return
+
+
+# ===============================
+# Core
+# ===============================
+
+
+## Adds a listener to the signal
+##
+## A callable cannot be added more than once
+func add(callback: Callable) -> void:
+    if has(callback):
+        return
+    _listeners.append(BetterSignalListener.new(callback, self))
+
+
+## Emits the signal with the given payload
+func emit(payload: Variant) -> void:
+    for listener in _listeners:
+        listener.invoke_callable(payload)
+
+
+## Removes all listeners from the signal
+func clear() -> void:
+    _listeners.clear()
+
+
+# ===============================
+# Utility
+# ===============================
+
+
+## Checks if the callable is already registered to the signal
+func has(callback: Callable) -> bool:
+    for listener in _listeners:
+        if listener.has_callable(callback):
+            return true
+    return false
