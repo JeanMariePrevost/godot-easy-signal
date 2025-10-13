@@ -137,9 +137,24 @@ func _init(payload_signature: Variant = TYPE_NIL):
 ## Adds a listener to the signal
 ## Adding the same callable more than once has no effect
 func add(callback: Callable) -> BetterSignalListener:
+    ###########################################################################################
+    # LIMITATION NOTE: Currently it is not possible to neither fully validate a callable signature nor "dectect/handle" a failed call
+    # This means that it _will_ error out and log to the console
+    # But it will proceed with the other listeners just fine (though it causes a breakpoint when in the editor, but you can "continue" from there)
+    #
+    # So...
+    # TODO: Implement a way to detect and handle failed calls if there ever is a proper way to achieve this
+    ###########################################################################################
     var listener: BetterSignalListener = find(callback)
     if listener != null:
         return listener
+
+    var best_effort_validation: Dictionary = _weakly_validate_callback(callback)
+    print("Best effort validation: ", best_effort_validation)
+    if not best_effort_validation["valid"]:
+        push_error("Callback could not be added. " + best_effort_validation["reason"])
+        return null
+
     listener = BetterSignalListener.new(callback, self)
     _listeners.append(listener)
     return listener
@@ -187,3 +202,53 @@ func find(callback: Callable) -> BetterSignalListener:
         if listener.has_callable(callback):
             return listener
     return null
+
+
+## Does a best-effort validation of the callback signature
+## Returns true if it appears to match expected signature; false otherwise
+##
+## NOTE: Does NOT guarante 100% compatibility as of yet due to very limited introspection capabilities, notably with lambdas
+func _weakly_validate_callback(callback: Callable) -> Dictionary:
+    # Validate non-null and valid
+    if callback == null:
+        return {"valid": false, "reason": "Callback is null"}
+
+    if not callback.is_valid():
+        return {"valid": false, "reason": "Callback is not valid"}
+
+    # Validate argument count
+    if callback.get_argument_count() != _argument_count:
+        return {"valid": false, "reason": "Argument count mismatch"}
+
+    # Attempt to validate argument types (works for named functions only I believe?)
+    var target_object = callback.get_object()
+    var target_method = callback.get_method()
+
+    # Skip if the callable is a lambda (these aren't introspectable)
+    if target_object == null or target_method == "":
+        # Can't inspect → always assume valid signature for now...
+        return {"valid": true, "reason": "Callable is a lambda (not introspectable)"}
+
+    var script: Script = target_object.get_script()
+    if script == null:
+        # Built-in methods can't be verified this way
+        return {"valid": true, "reason": "Callable is a built-in method (not introspectable)"}
+
+    var methods: Array[Dictionary] = script.get_script_method_list()
+    for m in methods:
+        if m.name == target_method:
+            # We have a declared method definition with argument metadata
+            var args_meta: Array[Dictionary] = m.args
+            if args_meta.size() != _argument_count:
+                return {"valid": false, "reason": "Argument count mismatch (expected " + str(_argument_count) + ", got " + str(args_meta.size()) + ")"}
+            for i in range(_argument_count):
+                var expected_type: String = _argument_types[i]
+                var declared_type: String = type_string(args_meta[i].type)
+                # If both sides have explicit types, compare them
+                # NOTE: A "Nil" type argument is an "untyped Variant", not "void"
+                if declared_type != "Nil" and expected_type != "Nil" and declared_type != expected_type:
+                    return {"valid": false, "reason": "Argument type mismatch (expected " + expected_type + ", got " + declared_type + ")"}
+            return {"valid": true, "reason": "Callable is a valid method (introspectable)"}
+
+    # If the method wasn't found in the script, assume it's external or native
+    return {"valid": true, "reason": "Callable is external or native (not introspectable)"}
