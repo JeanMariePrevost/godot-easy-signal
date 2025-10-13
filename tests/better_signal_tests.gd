@@ -8,7 +8,7 @@ extends TestFile
 
 
 func test_new_typed_single_type() -> TestResult:
-    var test_signal = BetterSignal.new_typed(["int"])
+    var test_signal = BetterSignal.new_typed("int")
 
     if test_signal.get_argument_count() != 1:
         return fail_test("Expected argument count to be 1, got " + str(test_signal.get_argument_count()))
@@ -23,7 +23,7 @@ func test_new_typed_single_type() -> TestResult:
 
 
 func test_new_typed_multiple_types() -> TestResult:
-    var test_signal = BetterSignal.new_typed(["int", "float", "String"])
+    var test_signal = BetterSignal.new_typed("int", "float", "String")
 
     if test_signal.get_argument_count() != 3:
         return fail_test("Expected argument count to be 3, got " + str(test_signal.get_argument_count()))
@@ -35,6 +35,15 @@ func test_new_typed_multiple_types() -> TestResult:
         return fail_test("Expected signal to not be void")
 
     return pass_test()
+
+
+func test_new_typed_bad_input_returns_null() -> TestResult:
+    var test_signal = BetterSignal.new_typed([["int", "float", "String"]])
+
+    if test_signal == null:
+        return pass_test()
+    else:
+        return fail_test("Expected signal to be null")
 
 
 func test_new_void() -> TestResult:
@@ -540,10 +549,10 @@ func test_remove_all_handlers() -> TestResult:
 func test_emit_void_signal() -> TestResult:
     var test_signal = BetterSignal.new_void()
     var call_count := [0]
-    var callback := func(_payload): call_count[0] += 1
+    var callback := func(): call_count[0] += 1
 
     test_signal.add(callback)
-    test_signal.emit(null)
+    test_signal.emit()
 
     if call_count[0] != 1:
         return fail_test("Expected callback to be called once, got " + str(call_count[0]))
@@ -595,8 +604,8 @@ func test_emit_typed_signal_with_invalid_payload() -> TestResult:
 
 func test_emit_variant_signal_with_different_types() -> TestResult:
     var test_signal = BetterSignal.new_untyped()
-    var received_payloads := []
-    var callback := func(payload): received_payloads.append(payload)
+    var received_payloads: Array[Variant] = []
+    var callback: Callable = func(payload: Variant): received_payloads.append(payload)
 
     test_signal.add(callback)
     test_signal.emit(42)

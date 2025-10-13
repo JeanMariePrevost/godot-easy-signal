@@ -18,6 +18,12 @@ class_name BetterSignal
 ## var signal = BetterSignal.new_typed(TYPE_INT, TYPE_FLOAT, TYPE_STRING) # Results in an (int, float, string) signal
 ## ```
 static func new_typed(...payload_signature: Array[Variant]) -> BetterSignal:
+    # Validate that all arguments are either strings (type names) or integers (Variant.Type values)
+    for arg in payload_signature:
+        if not (arg is String or arg is int):
+            push_error("Incorrect payload_signature value.Expect an array of int and/or String, got: " + str(payload_signature))
+            return null
+            
     return BetterSignal.new(payload_signature)
 
 
@@ -257,7 +263,7 @@ func _weakly_validate_callback(callback: Callable) -> Dictionary:
                 var declared_type: String = type_string(args_meta[i].type)
                 # If both sides have explicit types, compare them
                 # NOTE: A "Nil" type argument is an "untyped Variant", not "void"
-                if declared_type != "Nil" and expected_type != "Nil" and declared_type != expected_type:
+                if declared_type not in ["Nil", "Variant"] and expected_type not in ["Nil", "Variant"] and declared_type != expected_type:
                     return {"valid": false, "reason": "Argument type mismatch (requires " + expected_type + ", exposes " + declared_type + ")"}
             return {"valid": true, "reason": "Callable is a valid method with the expected signature (introspectable)"}
 
@@ -274,7 +280,7 @@ func validate_payload(payload: Array[Variant]) -> Dictionary:
     for i in range(_argument_count):
         var expected_type: String = _argument_types[i]
         var declared_type: String = type_string(typeof(payload[i]))
-        if declared_type != "Nil" and expected_type != "Nil" and declared_type != expected_type:
+        if declared_type not in ["Nil", "Variant"] and expected_type not in ["Nil", "Variant"] and declared_type != expected_type:
             return {"valid": false, "reason": "Argument type mismatch (requires " + expected_type + ", exposes " + declared_type + ")"}
 
     return {"valid": true, "reason": "Payload is valid"}
