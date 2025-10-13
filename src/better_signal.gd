@@ -298,3 +298,43 @@ func validate_payload(payload: Array[Variant]) -> Dictionary:
 func _sort_listeners_by_priority() -> void:
     _listeners.sort_custom(func(a: BetterSignalListener, b: BetterSignalListener): return a.get_priority() > b.get_priority())
 
+
+## Prints a detailed and formatted summary of the signal's internal state.
+func debug_pretty_print_state() -> void:
+    var signal_type: String
+    var signature: String = ""
+    
+    # Determine type & signature
+    if _is_void:
+        signal_type = "void"
+        signature = "()"
+    elif _is_variant:
+        signal_type = "variant"
+        signature = "(...)"
+    else:
+        signal_type = "typed"
+        if _argument_count > 0:
+            signature = "(" + ", ".join(_argument_types) + ")"
+        else:
+            signature = "()"
+    
+    # Header
+    print("\n──────────────────────────────────────────────")
+    print(" BetterSignal Debug Summary")
+    print("──────────────────────────────────────────────")
+    print("Payload: " + signal_type + " " + signature)
+    print("Listeners: " + str(_listeners))
+    print("")
+    
+    # Listeners section
+    var count := _listeners.size()
+    if count == 0:
+        print("Listeners: none")
+    else:
+        print("Listeners (" + str(count) + "):")
+        for i in range(count):
+            var l = _listeners[i]
+            print("  • #" + str(i) + " | priority=" + str(l.get_priority()) + " | uses_left=" + str(l.get_uses_left()) + " | " + l.get_target_object().get_script().get_path() + " -> " + l.get_target_method() + "()")
+    
+    # Footer
+    print("──────────────────────────────────────────────\n")
