@@ -43,9 +43,15 @@ func limited_to(uses_left: int) -> void:
 ## Can be any int value, including negative numbers. Defaults to 0
 func with_priority(priority: int) -> void:
     _priority = priority
+    _signal._sort_listeners_by_priority()
 
 
 ## Checks if the listener has the given callable
 ## Used to compare without exposing the callable
 func has_callable(callable: Callable) -> bool:
     return _callable == callable
+
+
+## Gets the priority of the listener
+func get_priority() -> int:
+    return _priority

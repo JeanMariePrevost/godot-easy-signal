@@ -657,3 +657,94 @@ func test_emit_after_handler_removed() -> TestResult:
         return fail_test("Expected callback to be called once (before removal), got " + str(call_count[0]))
 
     return pass_test()
+
+
+func test_emit_with_priority() -> TestResult:
+    var test_signal = BetterSignal.new()
+    var results: Array[int] = []
+    var callback1: Callable = func(): results.append(1)
+    var callback2: Callable = func(): results.append(2)
+    var callback3: Callable = func(): results.append(3)
+
+    test_signal.add(callback1).with_priority(1)
+    test_signal.add(callback2).with_priority(-1)
+    test_signal.add(callback3).with_priority(2)
+    test_signal.emit()
+
+    if results != [3, 1, 2]:
+        return fail_test("Expected results to be [3, 1, 2], got " + str(results))
+
+    return pass_test()
+
+
+func test_emit_with_priority_post_emit() -> TestResult:
+    var test_signal = BetterSignal.new()
+    var results: Array[int] = []
+    var callback1: Callable = func(): results.append(1)
+    var callback2: Callable = func(): results.append(2)
+    var callback3: Callable = func(): results.append(3)
+
+    var listener1 = test_signal.add(callback1)
+    var listener2 = test_signal.add(callback2)
+    var listener3 = test_signal.add(callback3)
+
+    test_signal.emit()
+
+    results.clear()
+
+    listener1.with_priority(1)
+    listener2.with_priority(2)
+    listener3.with_priority(3)
+
+    test_signal.emit()
+
+    if results != [3, 2, 1]:
+        return fail_test("Expected results to be [3,2,1], got " + str(results))
+
+    results.clear()
+
+    listener1.with_priority(3)
+    listener2.with_priority(1)
+    listener3.with_priority(-100)
+
+    test_signal.emit()
+
+    if results != [1, 2, 3]:
+        return fail_test("Expected results to be [1,2,3], got " + str(results))
+
+    return pass_test()
+
+
+func test_priority_resets_after_remove() -> TestResult:
+    var test_signal = BetterSignal.new()
+    var results: Array[int] = []
+    var callback1: Callable = func(): results.append(1)
+    var callback2: Callable = func(): results.append(2)
+    var callback3: Callable = func(): results.append(3)
+
+    test_signal.add(callback1).with_priority(5)
+    test_signal.add(callback2).with_priority(1)
+    test_signal.add(callback3).with_priority(20)
+
+    test_signal.emit()
+
+    if results != [3, 1, 2]:
+        return fail_test("Expected results to be [3, 1, 2], got " + str(results))
+
+    results.clear()
+
+    test_signal.remove(callback1)
+    test_signal.emit()
+
+    if results != [3, 2]:
+        return fail_test("Expected results to be [3,2], got " + str(results))
+
+    results.clear()
+
+    test_signal.add(callback1)
+    test_signal.emit()
+
+    if results != [3, 2, 1]:
+        return fail_test("Expected results to be [3,2,1], got " + str(results))
+
+    return pass_test()

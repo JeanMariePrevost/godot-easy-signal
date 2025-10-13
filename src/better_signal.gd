@@ -223,6 +223,10 @@ func find(callback: Callable) -> BetterSignalListener:
 ## Returns true if it appears to match expected signature; false otherwise
 ##
 ## NOTE: Does NOT guarante 100% compatibility as of yet due to very limited introspection capabilities, notably with lambdas
+##
+## Returns a dictionary with the following keys:
+## - "valid": true if the callback is valid, false otherwise
+## - "reason": a string explaining why the callback is valid or invalid
 func _weakly_validate_callback(callback: Callable) -> Dictionary:
     # Validate non-null and valid
     if callback == null:
@@ -271,6 +275,10 @@ func _weakly_validate_callback(callback: Callable) -> Dictionary:
     return {"valid": true, "reason": "Callable is external or native (not introspectable)"}
 
 
+## Validates the payload against the signal's signature
+## Returns a dictionary with the following keys:
+## - "valid": true if the payload is valid, false otherwise
+## - "reason": a string explaining why the payload is valid or invalid
 func validate_payload(payload: Array[Variant]) -> Dictionary:
     # Check argument count
     if payload.size() != _argument_count:
@@ -284,3 +292,9 @@ func validate_payload(payload: Array[Variant]) -> Dictionary:
             return {"valid": false, "reason": "Argument type mismatch (requires " + expected_type + ", exposes " + declared_type + ")"}
 
     return {"valid": true, "reason": "Payload is valid"}
+
+
+## Called by listeners when their priority is changed
+func _sort_listeners_by_priority() -> void:
+    _listeners.sort_custom(func(a: BetterSignalListener, b: BetterSignalListener): return a.get_priority() > b.get_priority())
+
