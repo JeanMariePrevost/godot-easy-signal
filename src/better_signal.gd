@@ -6,17 +6,18 @@ class_name BetterSignal
 # ===============================
 
 
-## Creates a new BetterSignal with a payload signature defined by an array of type names.
+## Creates a new BetterSignal with a payload signature defined by an array of type names or Variant.Type values.
 ##
 ## This only provides additional checks and debugging info at emit() and add() time
-## YOu can get a micro-performance gain by using a "variant" signal instead to skip the type checks
+## You can get a micro-performance gain by using a "variant" signal instead to skip the type checks
 ##
 ## Example:
 ##
 ## ```
-## var signal = BetterSignal.new_typed(["int", "float", "String"]) # Results in an (int, float, string) signal
+## var signal = BetterSignal.new_typed("int", "MyCustomClass") # Results in an (int, MyCustomClass) signal
+## var signal = BetterSignal.new_typed(TYPE_INT, TYPE_FLOAT, TYPE_STRING) # Results in an (int, float, string) signal
 ## ```
-static func new_typed(payload_signature: Array[String]) -> BetterSignal:
+static func new_typed(...payload_signature: Array[Variant]) -> BetterSignal:
     return BetterSignal.new(payload_signature)
 
 
@@ -39,7 +40,7 @@ var _argument_count: int = 0  ## The number of arguments
 var _is_variant: bool = false  ## Whether the signal is a variant signal (accepts any arguments)
 var _is_void: bool = false  ## Whether the signal is a void signal (accepts no arguments)
 
-var _listeners: Array[BetterSignalListener] = []
+var _listeners: Array[BetterSignalListener]
 
 
 func get_argument_types() -> Array[String]:
@@ -224,17 +225,15 @@ func _weakly_validate_callback(callback: Callable) -> Dictionary:
     if not callback.is_valid():
         return {"valid": false, "reason": "Callback is not valid"}
 
-    # Validate argument count
-    if callback.get_argument_count() != _argument_count:
-        return {"valid": false, "reason": "Argument count mismatch (expected " + str(_argument_count) + ", got " + str(callback.get_argument_count()) + ")"}
-
     # Attempt to validate argument types (works for named functions only I believe?)
     var target_object = callback.get_object()
     var target_method = callback.get_method()
 
     # Skip if the callable is a lambda (these aren't introspectable)
     if target_object == null or target_method == "":
-        # Can't inspect → always assume valid signature for now...
+        # Can't truly inspect, rely only on the argument count
+        if callback.get_argument_count() != _argument_count:
+            return {"valid": false, "reason": "Argument count mismatch (requires " + str(_argument_count) + ", has " + str(callback.get_argument_count()) + ")"}
         return {"valid": true, "reason": "Callable is a lambda (not introspectable)"}
 
     var script: Script = target_object.get_script()
@@ -245,17 +244,21 @@ func _weakly_validate_callback(callback: Callable) -> Dictionary:
     var methods: Array[Dictionary] = script.get_script_method_list()
     for m in methods:
         if m.name == target_method:
+            # Special case, check if the method is variadic
+            if m.flags & METHOD_FLAG_VARARG != 0:
+                return {"valid": true, "reason": "Callable is a variadic method and will accept anything"}
+            
             # We have a declared method definition with argument metadata
             var args_meta: Array[Dictionary] = m.args
             if args_meta.size() != _argument_count:
-                return {"valid": false, "reason": "Argument count mismatch (expected " + str(_argument_count) + ", got " + str(args_meta.size()) + ")"}
+                return {"valid": false, "reason": "Argument count mismatch (requires " + str(_argument_count) + ", has " + str(args_meta.size()) + ")"}
             for i in range(_argument_count):
                 var expected_type: String = _argument_types[i]
                 var declared_type: String = type_string(args_meta[i].type)
                 # If both sides have explicit types, compare them
                 # NOTE: A "Nil" type argument is an "untyped Variant", not "void"
                 if declared_type != "Nil" and expected_type != "Nil" and declared_type != expected_type:
-                    return {"valid": false, "reason": "Argument type mismatch (expected " + expected_type + ", got " + declared_type + ")"}
+                    return {"valid": false, "reason": "Argument type mismatch (requires " + expected_type + ", exposes " + declared_type + ")"}
             return {"valid": true, "reason": "Callable is a valid method with the expected signature (introspectable)"}
 
     # If the method wasn't found in the script, assume it's external or native
@@ -265,13 +268,13 @@ func _weakly_validate_callback(callback: Callable) -> Dictionary:
 func validate_payload(payload: Array[Variant]) -> Dictionary:
     # Check argument count
     if payload.size() != _argument_count:
-        return {"valid": false, "reason": "Argument count mismatch (expected " + str(_argument_count) + ", got " + str(payload.size()) + ")"}
+        return {"valid": false, "reason": "Argument count mismatch (requires " + str(_argument_count) + ", has " + str(payload.size()) + ")"}
 
     # Check argument types
     for i in range(_argument_count):
         var expected_type: String = _argument_types[i]
         var declared_type: String = type_string(typeof(payload[i]))
         if declared_type != "Nil" and expected_type != "Nil" and declared_type != expected_type:
-            return {"valid": false, "reason": "Argument type mismatch (expected " + expected_type + ", got " + declared_type + ")"}
+            return {"valid": false, "reason": "Argument type mismatch (requires " + expected_type + ", exposes " + declared_type + ")"}
 
     return {"valid": true, "reason": "Payload is valid"}
