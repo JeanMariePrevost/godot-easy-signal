@@ -1,7 +1,7 @@
 extends TestFile
 
 # ===============================
-# Factory Methods Tests
+# Initialization Tests
 # ===============================
 
 
@@ -63,11 +63,6 @@ func test_new_untyped() -> TestResult:
         return fail_test("Expected signal to not be void")
 
     return pass_test()
-
-
-# ===============================
-# _init() with TYPE constants
-# ===============================
 
 
 func test_init_single_type_int() -> TestResult:
@@ -145,11 +140,6 @@ func test_init_array_of_types_mixed() -> TestResult:
     return pass_test()
 
 
-# ===============================
-# _init() with String type names
-# ===============================
-
-
 func test_init_single_string_type() -> TestResult:
     var test_signal = BetterSignal.new("int")
 
@@ -208,11 +198,6 @@ func test_init_array_of_string_types_with_custom() -> TestResult:
         return fail_test("Expected signal to not be void")
 
     return pass_test()
-
-
-# ===============================
-# Void signal tests (null, TYPE_NIL, [])
-# ===============================
 
 
 func test_init_void_with_null() -> TestResult:
@@ -275,11 +260,6 @@ func test_init_void_with_no_args() -> TestResult:
     return pass_test()
 
 
-# ===============================
-# Variant signal tests
-# ===============================
-
-
 func test_init_variant_with_string() -> TestResult:
     var test_signal = BetterSignal.new("Variant")
 
@@ -310,76 +290,6 @@ func test_init_variant_with_array() -> TestResult:
     return pass_test()
 
 
-# ===============================
-# Invalid input tests (should default to variant)
-# ===============================
-
-
-func test_init_invalid_type_bool() -> TestResult:
-    var test_signal = BetterSignal.new(true)
-
-    if test_signal.get_argument_count() != 1:
-        return fail_test("Expected argument count to be 1 (variant defaults to 1), got " + str(test_signal.get_argument_count()))
-    if test_signal.get_argument_types() != ["Variant"]:
-        return fail_test("Expected argument types to be ['Variant'], got " + str(test_signal.get_argument_types()))
-    if not test_signal.get_is_variant():
-        return fail_test("Expected signal to be variant (invalid input defaults to variant)")
-    if test_signal.get_is_void():
-        return fail_test("Expected signal to not be void")
-
-    return pass_test()
-
-
-func test_init_invalid_type_object() -> TestResult:
-    var test_signal = BetterSignal.new(Node.new())
-
-    if test_signal.get_argument_count() != 1:
-        return fail_test("Expected argument count to be 1 (variant defaults to 1), got " + str(test_signal.get_argument_count()))
-    if test_signal.get_argument_types() != ["Variant"]:
-        return fail_test("Expected argument types to be ['Variant'], got " + str(test_signal.get_argument_types()))
-    if not test_signal.get_is_variant():
-        return fail_test("Expected signal to be variant (invalid input defaults to variant)")
-    if test_signal.get_is_void():
-        return fail_test("Expected signal to not be void")
-
-    return pass_test()
-
-
-func test_init_invalid_array_with_invalid_element() -> TestResult:
-    var test_signal = BetterSignal.new([TYPE_INT, true, TYPE_FLOAT])  # Should default to untyped
-
-    if test_signal.get_argument_count() != 1:
-        return fail_test("Expected argument count to be 1 (variant defaults to 1), got " + str(test_signal.get_argument_count()))
-    if test_signal.get_argument_types() != ["Variant"]:
-        return fail_test("Expected argument types to be ['Variant'], got " + str(test_signal.get_argument_types()))
-    if not test_signal.get_is_variant():
-        return fail_test("Expected signal to be variant (invalid element causes fallback to variant)")
-    if test_signal.get_is_void():
-        return fail_test("Expected signal to not be void")
-
-    return pass_test()
-
-
-func test_init_invalid_type_constant_out_of_range() -> TestResult:
-    var test_signal = BetterSignal.new(-1)  # Should default to untyped
-
-    if test_signal.get_argument_count() != 1:
-        return fail_test("Expected argument count to be 1 (variant defaults to 1), got " + str(test_signal.get_argument_count()))
-    if test_signal.get_argument_types() != ["Variant"]:
-        return fail_test("Expected argument types to be ['Variant'], got " + str(test_signal.get_argument_types()))
-    if not test_signal.get_is_variant():
-        return fail_test("Expected signal to be variant (invalid type constant defaults to variant)")
-    if test_signal.get_is_void():
-        return fail_test("Expected signal to not be void")
-
-    return pass_test()
-
-
-# ===============================
-# Mixed type specification tests
-# ===============================
-
-
 func test_init_array_mixed_type_and_string() -> TestResult:
     var test_signal = BetterSignal.new([TYPE_INT, "float", TYPE_STRING])
 
@@ -393,11 +303,6 @@ func test_init_array_mixed_type_and_string() -> TestResult:
         return fail_test("Expected signal to not be void")
 
     return pass_test()
-
-
-# ===============================
-# Edge cases and comprehensive type coverage
-# ===============================
 
 
 func test_init_all_basic_types() -> TestResult:
@@ -424,20 +329,6 @@ func test_init_all_basic_types() -> TestResult:
         return fail_test("Expected argument types to be " + str(expected_types) + ", got " + str(test_signal.get_argument_types()))
     if test_signal.get_is_variant():
         return fail_test("Expected signal to not be variant")
-    if test_signal.get_is_void():
-        return fail_test("Expected signal to not be void")
-
-    return pass_test()
-
-
-func test_init_array_with_null() -> TestResult:
-    var test_signal = BetterSignal.new(["String", null, "int"])  # Should default to untyped
-    if test_signal.get_argument_count() != 1:
-        return fail_test("Expected argument count to be 1, got " + str(test_signal.get_argument_count()))
-    if test_signal.get_argument_types() != ["Variant"]:
-        return fail_test('Expected argument types to be ["Variant"], got ' + str(test_signal.get_argument_types()))
-    if not test_signal.get_is_variant():
-        return fail_test("Expected signal to be variant")
     if test_signal.get_is_void():
         return fail_test("Expected signal to not be void")
 
@@ -483,6 +374,87 @@ func test_init_type_object() -> TestResult:
         return fail_test("Expected argument types to be ['Object'], got " + str(test_signal.get_argument_types()))
     if test_signal.get_is_variant():
         return fail_test("Expected signal to not be variant")
+    if test_signal.get_is_void():
+        return fail_test("Expected signal to not be void")
+
+    return pass_test()
+
+
+# ===============================
+# Invalid initialization input tests (expected to default to variant)
+# ===============================
+
+
+func test_init_invalid_type_bool() -> TestResult:
+    var test_signal = BetterSignal.new(true)
+
+    if test_signal.get_argument_count() != 1:
+        return fail_test("Expected argument count to be 1 (variant defaults to 1), got " + str(test_signal.get_argument_count()))
+    if test_signal.get_argument_types() != ["Variant"]:
+        return fail_test("Expected argument types to be ['Variant'], got " + str(test_signal.get_argument_types()))
+    if not test_signal.get_is_variant():
+        return fail_test("Expected signal to be variant (invalid input defaults to variant)")
+    if test_signal.get_is_void():
+        return fail_test("Expected signal to not be void")
+
+    return pass_test()
+
+
+func test_init_invalid_type_object() -> TestResult:
+    var test_object = Object.new()
+    var test_signal = BetterSignal.new(test_object)
+    test_object.free()
+
+    if test_signal.get_argument_count() != 1:
+        return fail_test("Expected argument count to be 1 (variant defaults to 1), got " + str(test_signal.get_argument_count()))
+    if test_signal.get_argument_types() != ["Variant"]:
+        return fail_test("Expected argument types to be ['Variant'], got " + str(test_signal.get_argument_types()))
+    if not test_signal.get_is_variant():
+        return fail_test("Expected signal to be variant (invalid input defaults to variant)")
+    if test_signal.get_is_void():
+        return fail_test("Expected signal to not be void")
+
+    return pass_test()
+
+
+func test_init_invalid_array_with_invalid_element() -> TestResult:
+    var test_signal = BetterSignal.new([TYPE_INT, true, TYPE_FLOAT])  # Should default to untyped
+
+    if test_signal.get_argument_count() != 1:
+        return fail_test("Expected argument count to be 1 (variant defaults to 1), got " + str(test_signal.get_argument_count()))
+    if test_signal.get_argument_types() != ["Variant"]:
+        return fail_test("Expected argument types to be ['Variant'], got " + str(test_signal.get_argument_types()))
+    if not test_signal.get_is_variant():
+        return fail_test("Expected signal to be variant (invalid element causes fallback to variant)")
+    if test_signal.get_is_void():
+        return fail_test("Expected signal to not be void")
+
+    return pass_test()
+
+
+func test_init_invalid_type_constant_out_of_range() -> TestResult:
+    var test_signal = BetterSignal.new(-1)  # Should default to untyped
+
+    if test_signal.get_argument_count() != 1:
+        return fail_test("Expected argument count to be 1 (variant defaults to 1), got " + str(test_signal.get_argument_count()))
+    if test_signal.get_argument_types() != ["Variant"]:
+        return fail_test("Expected argument types to be ['Variant'], got " + str(test_signal.get_argument_types()))
+    if not test_signal.get_is_variant():
+        return fail_test("Expected signal to be variant (invalid type constant defaults to variant)")
+    if test_signal.get_is_void():
+        return fail_test("Expected signal to not be void")
+
+    return pass_test()
+
+
+func test_init_array_with_null() -> TestResult:
+    var test_signal = BetterSignal.new(["String", null, "int"])  # Should default to untyped
+    if test_signal.get_argument_count() != 1:
+        return fail_test("Expected argument count to be 1, got " + str(test_signal.get_argument_count()))
+    if test_signal.get_argument_types() != ["Variant"]:
+        return fail_test('Expected argument types to be ["Variant"], got ' + str(test_signal.get_argument_types()))
+    if not test_signal.get_is_variant():
+        return fail_test("Expected signal to be variant")
     if test_signal.get_is_void():
         return fail_test("Expected signal to not be void")
 
