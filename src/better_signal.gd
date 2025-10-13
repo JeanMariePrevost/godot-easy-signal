@@ -9,7 +9,7 @@ class_name BetterSignal
 ## Creates a new BetterSignal with a payload signature defined by an array of type names or Variant.Type values.
 ##
 ## This only provides additional checks and debugging info at emit() and add() time
-## You can get a micro-performance gain by using a "variant" signal instead to skip the type checks
+## You can get a small performance gain by using an untyped signal instead to skip the validation logic
 ##
 ## Example:
 ##
@@ -33,6 +33,8 @@ static func new_void() -> BetterSignal:
 
 
 ## Creates a new BetterSignal that accepts any payload.
+##
+## Slightly more performant than a typed signal as it skips the validation logic
 static func new_untyped() -> BetterSignal:
     return BetterSignal.new(["Variant"])
 
@@ -172,11 +174,19 @@ func emit(...args: Array[Variant]) -> void:
     # TODO: Implement priority (needs constant sorting? On changes? We need to detect changes in the listeners? They report back?..)
 
     # Validate payload
-    var validation_result: Dictionary = validate_payload(args)
+    if(_is_variant):
+        # Nothing to do
+        pass
+    elif(_is_void):
+        if(args.size() != 0):
+            push_error("Payload could not be emitted. Void signal does not accept any arguments")
+            return
+    else:
+        var validation_result: Dictionary = validate_payload(args)
 
-    if not validation_result["valid"]:
-        push_error("Payload could not be emitted. " + validation_result["reason"])
-        return
+        if not validation_result["valid"]:
+            push_error("Payload could not be emitted. " + validation_result["reason"])
+            return
 
     for listener in _listeners:
         listener.emit_to(args)
