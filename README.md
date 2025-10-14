@@ -117,6 +117,12 @@ ship_landed.emit()
 ```
 
 
+## Installation
+
+Copy the `src/easy_signal_subscriber.gd` and `src/easy_signal.gd` files into your project, reload the current scene, and from there you can use the `EasySignal` class.
+
+
+
 ## Performance Considerations
 
 EasySignal runs entirely in GDScript, with a few levels of indirection, priority sorting, and optional runtime validation. Sadly, this makes it **measurably slower than Godot’s built-in C++ signal system**.
