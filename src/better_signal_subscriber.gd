@@ -64,14 +64,14 @@ func emit_to(args: Array[Variant]) -> void:
     # Ensure callable still exists after the delay
     if _callable.is_null():
         if _signal.get_ref() != null:
-            _signal.get_ref().remove(self)
+            _signal.get_ref().remove(_callable)
         return
     _callable.callv(args)
 
     # Remove if ran out
     if _uses_left == 0:
         if _signal.get_ref() != null:
-            _signal.get_ref().remove(self)  # TODO: Should this be safer? Deferred? Is it fine to remove from signal right _before_ invoking the callable?
+            _signal.get_ref().remove(_callable)  # TODO: Should this be safer? Deferred? Is it fine to remove from signal right _before_ invoking the callable?
 
 
 ## Makes the subscriber unregister after the first use

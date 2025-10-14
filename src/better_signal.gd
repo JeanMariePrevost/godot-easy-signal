@@ -27,10 +27,17 @@ static func new_typed(...payload_signature: Array[Variant]) -> BetterSignal:
     return BetterSignal.new(payload_signature)
 
 
-## Creates a new BetterSignal that does not accept any payload.
+## Creates a new BetterSignal that does not process any payload.
+## Applies no signature validation and simply drops any payload received
 static func new_void() -> BetterSignal:
     return BetterSignal.new(TYPE_NIL)
 
+## Creates a new BetterSignal that does not accept any payload.
+## Applies strict signature validation
+static func new_void_strict() -> BetterSignal:
+    var new_signal = BetterSignal.new(TYPE_NIL)
+    new_signal._void_is_strict = true
+    return new_signal
 
 ## Creates a new BetterSignal that accepts any payload.
 ##
@@ -43,10 +50,13 @@ static func new_untyped() -> BetterSignal:
 # Initialization
 # ===============================
 
+var warn_on_arguments_in_void_signals: bool = true
+
 var _argument_types: Array[String]  ## The types of the arguments, where TYPE_OBJECT is also the basis for any custom type
 var _argument_count: int = 0  ## The number of arguments
 var _is_variant: bool = false  ## Whether the signal is a variant signal (accepts any arguments)
 var _is_void: bool = false  ## Whether the signal is a void signal (accepts no arguments)
+var _void_is_strict: bool = false  ## If false, void signals simply drop any payload received, and still emit. True will require that there be no payload at all
 
 var _is_enabled: bool = true  ## Whether the signal will actually emit to subscribers
 
@@ -180,10 +190,15 @@ func emit(...args: Array[Variant]) -> void:
     if(_is_variant):
         # Nothing to do
         pass
-    elif(_is_void):
-        if(args.size() != 0):
-            push_error("Payload could not be emitted. Void signal does not accept any arguments")
+    elif(_is_void and args.size() != 0):
+        if(_void_is_strict):
+            push_error("Arguments were provided to a strict void signal. Emission will not go through.")
             return
+        elif(warn_on_arguments_in_void_signals):
+            # Only warn in case the user wonders why their arguments are not being passed
+            push_warning("You are passing arguments into a void signal, they will not be passed to subscribers. Use Untyped Signals if you wish for the arguments to go through.")
+            args = []
+
     else:
         var validation_result: Dictionary = validate_payload(args)
 
@@ -248,6 +263,12 @@ func link_to_godot_signal(godot_signal: Signal) -> void:
 
 ## Makes this signal trigger from a given signal's emissions
 func link_to_godot_signal_by_name(source: Object, signal_name: String) -> void:
+    if source == null or signal_name == "":
+        push_error("Invalid source or signal name: " + str(source) + " " + str(signal_name))
+        return
+    if source.is_connected(signal_name, emit):
+        push_warning("Signal is already linked to: " + str(source) + " " + str(signal_name))
+        return
     _godot_builtin_signals_links.append({"source": source, "signal_name": signal_name})
     source.connect(signal_name, emit)
 

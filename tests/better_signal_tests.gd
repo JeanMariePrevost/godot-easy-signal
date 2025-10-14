@@ -396,7 +396,7 @@ func test_init_type_object() -> TestResult:
 # ===============================
 
 
-func test_init_invalid_type_bool() -> TestResult:
+func test_init_invalid_type_bool_defaults_to_untyped() -> TestResult:
     var test_signal = BetterSignal.new(true)
 
     if test_signal.get_argument_count() != 1:
@@ -411,7 +411,7 @@ func test_init_invalid_type_bool() -> TestResult:
     return pass_test()
 
 
-func test_init_invalid_type_object() -> TestResult:
+func test_init_invalid_type_object_defaults_to_untyped() -> TestResult:
     var test_object = Object.new()
     var test_signal = BetterSignal.new(test_object)
     test_object.free()
@@ -428,7 +428,7 @@ func test_init_invalid_type_object() -> TestResult:
     return pass_test()
 
 
-func test_init_invalid_array_with_invalid_element() -> TestResult:
+func test_init_invalid_array_with_invalid_element_defaults_to_untyped() -> TestResult:
     var test_signal = BetterSignal.new([TYPE_INT, true, TYPE_FLOAT])  # Should default to untyped
 
     if test_signal.get_argument_count() != 1:
@@ -443,7 +443,7 @@ func test_init_invalid_array_with_invalid_element() -> TestResult:
     return pass_test()
 
 
-func test_init_invalid_type_constant_out_of_range() -> TestResult:
+func test_init_invalid_type_constant_out_of_range_defaults_to_untyped() -> TestResult:
     var test_signal = BetterSignal.new(-1)  # Should default to untyped
 
     if test_signal.get_argument_count() != 1:
@@ -458,7 +458,7 @@ func test_init_invalid_type_constant_out_of_range() -> TestResult:
     return pass_test()
 
 
-func test_init_array_with_null() -> TestResult:
+func test_init_array_with_null_defaults_to_untyped() -> TestResult:
     var test_signal = BetterSignal.new(["String", null, "int"])  # Should default to untyped
     if test_signal.get_argument_count() != 1:
         return fail_test("Expected argument count to be 1, got " + str(test_signal.get_argument_count()))
@@ -573,7 +573,7 @@ func test_emit_void_signal() -> TestResult:
     return pass_test()
 
 
-func test_emit_void_signal_with_payload() -> TestResult:
+func test_emit_void_signal_with_payload_goes_through() -> TestResult:
     var test_signal = BetterSignal.new_void()
     var call_count := [0]
     var callback := func(): call_count[0] += 1
@@ -581,8 +581,19 @@ func test_emit_void_signal_with_payload() -> TestResult:
     test_signal.add(callback)
     test_signal.emit(42)
 
+    return assert_equal(1, call_count[0])
+
+
+func test_emit_strict_void_signal_with_payload_does_not_go_through() -> TestResult:
+    var test_signal = BetterSignal.new_void_strict()
+    var call_count := [0]
+    var callback := func(): call_count[0] += 1
+
+    test_signal.add(callback)
+    test_signal.emit(42)
+
     if call_count[0] != 0:
-        return fail_test("Expected callback to not go through")
+        return fail_test("Expected callback to not go through (strict void signal does not accept any arguments)")
 
     return pass_test()
 
@@ -1353,7 +1364,6 @@ func test_signal_disconnect_from_godot_signal_by_name_stops_emitting_with_it() -
 func test_signal_disconnect_from_all_godot_signals_removes_all_links_from_internal_list() -> TestResult:
     var test_signal = BetterSignal.new_void()
     test_signal.link_to_godot_signal(Engine.get_main_loop().process_frame)
-    test_signal.link_to_godot_signal_by_name(Engine.get_main_loop(), "process_frame")
     test_signal.disconnect_from_all_godot_signals()
     return assert_equal(0, test_signal._godot_builtin_signals_links.size())
 
