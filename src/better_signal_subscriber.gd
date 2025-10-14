@@ -6,13 +6,16 @@
 extends RefCounted
 class_name BetterSignalSubscriber
 
-var _callable: Callable
-var _signal: WeakRef  # To a BetterSignal, needed to break the ref cycle between signal and subscriber
-var _uses_left: int = -1  ## Auto-remove when it reaches 0, -1 for unlimited
-var _priority: int = 0  ## Higher priority subscribers are invoked before lower priority subscribers
+var _callable: Callable  ## The callback function
+var _target_object: Object = null  ## The object that owns the callback function, null if the callback is a native function or a lambda
+var _target_method: String = ""  ## The method name of the callback function, empty string if the callback is a native function or a lambda
+var _signal: WeakRef  ## WeakRef to a BetterSignal, needed to break the ref cycle between signal and subscriber
 
-var _target_object: Object = null
-var _target_method: String = ""
+var _uses_left: int = -1  ## Countdown to auto-removal of this subscriber upon reaching 0, -1 for unlimited
+var _priority: int = 0  ## Priority of this subscriber, higher priority subscribers are invoked before lower priority subscribers
+
+var emit_delay_amount: int = 0  ## Delay in frames or milliseconds before the subscriber is invoked
+var emit_delay_type: String = "frames"  ## The type of delay: "process_frame", "physics_frame" or "ms"
 
 
 func _init(callable: Callable, owner_signal: BetterSignal):
@@ -28,16 +31,39 @@ func _init(callable: Callable, owner_signal: BetterSignal):
 
 ## Invokes the callable with the given payload
 ##
-## Internally decrements the uses_left if it is not unlimited
-## Removes the subscriber from its signal when uses_left reaches 0
+## Will also remove the subscriber from its signal if its uses_left run out
 func emit_to(args: Array[Variant]) -> void:
-    _callable.callv(args)
-    if _uses_left != -1:
+    # Ensure callable exists
+    if _callable == null:
+        if _signal.get_ref() != null:
+            _signal.get_ref().remove(self)
+        return
+
+    # Optional delay logic
+    if emit_delay_amount > 0:
+        var tree: SceneTree = Engine.get_main_loop() as SceneTree
+        if tree:
+            var _hack_to_keep_this_context_alive_yes_this_is_currently_required = self  # Without this, the context is garbage collected and the delay logic fails. We need a reference to keep it alive. It's a known issue: https://github.com/godotengine/godot/issues/81210
+            match emit_delay_type:
+                "process_frame":
+                    for i in emit_delay_amount:
+                        await tree.process_frame
+                "physics_frame":
+                    for i in emit_delay_amount:
+                        await tree.physics_frame
+                "ms":
+                    await tree.create_timer(emit_delay_amount / 1000.0).timeout
+
+    # Apply _uses_left logic
+    if _uses_left > 0:
         _uses_left -= 1
-        if _uses_left == 0:
-            var owner_signal = _signal.get_ref()
-            if owner_signal != null:
-                owner_signal.remove(_callable)
+
+    if _uses_left == 0:
+        if _signal.get_ref() != null:
+            _signal.get_ref().remove(self)  # TODO: Should this be safer? Deferred? Is it fine to remove from signal right _before_ invoking the callable?
+
+    # Invoke the callable
+    _callable.callv(args)
 
 
 ## Makes the subscriber unregister after the first use
@@ -61,6 +87,27 @@ func with_priority(priority: int) -> BetterSignalSubscriber:
     var owner_signal = _signal.get_ref()
     if owner_signal != null:
         owner_signal._sort_subscribers_by_priority()
+    return self
+
+
+## Sets a delay for the subscriber's emission handling, in process_frames
+func with_delay_frames(delay_amount: int) -> BetterSignalSubscriber:
+    emit_delay_amount = delay_amount
+    emit_delay_type = "process_frame"
+    return self
+
+
+## Sets a delay for the subscriber's emission handling, in physics_frames
+func with_delay_physics_frames(delay_amount: int) -> BetterSignalSubscriber:
+    emit_delay_amount = delay_amount
+    emit_delay_type = "physics_frame"
+    return self
+
+
+## Sets a delay for the subscriber's emission handling, in milliseconds
+func with_delay_ms(delay_amount: int) -> BetterSignalSubscriber:
+    emit_delay_amount = delay_amount
+    emit_delay_type = "ms"
     return self
 
 
