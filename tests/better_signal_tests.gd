@@ -760,6 +760,25 @@ func test_delay_prevents_immediate_execution() -> TestResult:
     var call_count := [0]
     var _callback := func(): call_count[0] += 1
 
+    test_signal.add(_callback).with_delay_frames(1)
+    test_signal.emit()
+
+    # Callback should NOT have been called yet (delay prevents immediate execution)
+    if call_count[0] != 0:
+        return fail_test("Expected callback to not be called immediately with delay, got " + str(call_count[0]) + " calls")
+
+    # Wait to prevent leaking from the test
+    await Engine.get_main_loop().process_frame
+    await Engine.get_main_loop().process_frame
+
+    return pass_test()
+
+
+func test_frame_delay_executes_at_the_right_frame() -> TestResult:
+    var test_signal = BetterSignal.new_void()
+    var call_count := [0]
+    var _callback := func(): call_count[0] += 1
+
     test_signal.add(_callback).with_delay_frames(3)
     test_signal.emit()
 
@@ -775,9 +794,378 @@ func test_delay_prevents_immediate_execution() -> TestResult:
         return fail_test("Expected callback to not be called immediately with delay, got " + str(call_count[0]) + " calls")
 
     await Engine.get_main_loop().process_frame
-    await Engine.get_main_loop().process_frame
 
     if call_count[0] != 1:
         return fail_test("Expected callback to be called once, got " + str(call_count[0]))
+
+    return pass_test()
+
+
+func test_physics_frame_delay_prevents_immediate_execution() -> TestResult:
+    var test_signal = BetterSignal.new_void()
+    var call_count := [0]
+    var _callback := func(): call_count[0] += 1
+
+    test_signal.add(_callback).with_delay_physics_frames(2)
+    test_signal.emit()
+
+    # Callback should NOT have been called yet
+    if call_count[0] != 0:
+        return fail_test("Expected callback to not be called immediately with physics delay, got " + str(call_count[0]) + " calls")
+
+    # Wait to prevent leaking from the test
+    await Engine.get_main_loop().physics_frame
+    await Engine.get_main_loop().physics_frame
+    await Engine.get_main_loop().physics_frame
+
+    return pass_test()
+
+
+func test_ms_delay_prevents_immediate_execution() -> TestResult:
+    var test_signal = BetterSignal.new_void()
+    var call_count := [0]
+    var _callback := func(): call_count[0] += 1
+
+    test_signal.add(_callback).with_delay_ms(50)
+    test_signal.emit()
+
+    # Callback should NOT have been called yet
+    if call_count[0] != 0:
+        return fail_test("Expected callback to not be called immediately with ms delay, got " + str(call_count[0]) + " calls")
+
+    # Wait for the delay to complete to prevent leaking
+    await Engine.get_main_loop().create_timer(0.1).timeout
+
+    return pass_test()
+
+
+func test_zero_delay_executes_immediately() -> TestResult:
+    var test_signal = BetterSignal.new_void()
+    var call_count := [0]
+    var _callback := func(): call_count[0] += 1
+
+    test_signal.add(_callback).with_delay_frames(0)
+    test_signal.emit()
+
+    # With zero delay, should execute immediately
+    if call_count[0] != 1:
+        return fail_test("Expected callback to be called immediately with zero delay, got " + str(call_count[0]) + " calls")
+
+    return pass_test()
+
+
+func test_delay_with_payload() -> TestResult:
+    var test_signal = BetterSignal.new(TYPE_INT)
+    var received_value := [null]
+    var _callback := func(value): received_value[0] = value
+
+    test_signal.add(_callback).with_delay_frames(2)
+    test_signal.emit(42)
+
+    # Should not have been called yet
+    if received_value[0] != null:
+        return fail_test("Expected callback to not be called immediately")
+
+    # Wait for delay
+    await Engine.get_main_loop().process_frame
+    await Engine.get_main_loop().process_frame
+    await Engine.get_main_loop().process_frame
+
+    # Should have received the payload
+    if received_value[0] != 42:
+        return fail_test("Expected payload to be 42, got " + str(received_value[0]))
+
+    return pass_test()
+
+
+func test_delay_with_once() -> TestResult:
+    var test_signal = BetterSignal.new_void()
+    var call_count := [0]
+    var _callback := func(): call_count[0] += 1
+
+    test_signal.add(_callback).with_delay_frames(2).once()
+
+    # First emit
+    test_signal.emit()
+
+    # Wait to ensure delay completes
+    for i in 3:
+        await Engine.get_main_loop().process_frame
+
+    if call_count[0] != 1:
+        return fail_test("Expected 1 call after first emit, got " + str(call_count[0]))
+
+    # Second emit - should not fire as it was removed after first use
+    test_signal.emit()
+
+    for i in 3:
+        await Engine.get_main_loop().process_frame
+
+    if call_count[0] != 1:
+        return fail_test("Expected still 1 call after second emit (once removes it), got " + str(call_count[0]))
+
+    return pass_test()
+
+
+func test_delay_with_limited_to() -> TestResult:
+    var test_signal = BetterSignal.new_void()
+    var call_count := [0]
+    var _callback := func(): call_count[0] += 1
+
+    test_signal.add(_callback).with_delay_frames(2).limited_to(2)
+
+    # First emit
+    test_signal.emit()
+    for i in 5:
+        await Engine.get_main_loop().process_frame
+
+    if call_count[0] != 1:
+        return fail_test("Expected 1 call, got " + str(call_count[0]))
+
+    # Second emit
+    test_signal.emit()
+    for i in 5:
+        await Engine.get_main_loop().process_frame
+
+    if call_count[0] != 2:
+        return fail_test("Expected 2 calls, got " + str(call_count[0]))
+
+    # Third emit - should not fire
+    test_signal.emit()
+    for i in 5:
+        await Engine.get_main_loop().process_frame
+
+    if call_count[0] != 2:
+        return fail_test("Expected still 2 calls after third emit (limited to 2), got " + str(call_count[0]))
+
+    return pass_test()
+
+
+func test_multiple_subscribers_with_different_delays() -> TestResult:
+    var test_signal = BetterSignal.new_void()
+    var call_order: Array[int] = []
+    var _callback1 := func(): call_order.append(1)
+    var _callback2 := func(): call_order.append(2)
+    var _callback3 := func(): call_order.append(3)
+
+    test_signal.add(_callback1).with_delay_frames(1)
+    test_signal.add(_callback2).with_delay_frames(3)
+    test_signal.add(_callback3)  # No delay
+
+    test_signal.emit()
+
+    # Callback3 should fire immediately
+    if call_order != [3]:
+        return fail_test("Expected [3] immediately, got " + str(call_order))
+
+    # Wait for callback1 (1 frame delay)
+    for i in 3:
+        await Engine.get_main_loop().process_frame
+
+    if call_order != [3, 1]:
+        return fail_test("Expected [3, 1] after 3 frames, got " + str(call_order))
+
+    # Wait for callback2 (3 frame delay total)
+    for i in 3:
+        await Engine.get_main_loop().process_frame
+
+    if call_order != [3, 1, 2]:
+        return fail_test("Expected [3, 1, 2] after all delays, got " + str(call_order))
+
+    return pass_test()
+
+
+func test_delay_with_priority() -> TestResult:
+    var test_signal = BetterSignal.new_void()
+    var call_order: Array[int] = []
+    var _callback1 := func(): call_order.append(1)
+    var _callback2 := func(): call_order.append(2)
+
+    # Both have same delay but different priorities
+    # Higher priority (2) should start its delay first
+    test_signal.add(_callback1).with_delay_frames(2).with_priority(1)
+    test_signal.add(_callback2).with_delay_frames(2).with_priority(2)
+
+    test_signal.emit()
+
+    # Wait for delays to complete
+    for i in 5:
+        await Engine.get_main_loop().process_frame
+
+    # Both should have fired (order depends on when delay started)
+    if call_order.size() != 2:
+        return fail_test("Expected 2 callbacks to fire, got " + str(call_order.size()))
+
+    # Priority 2 fires before priority 1 in the emit loop
+    if call_order != [2, 1]:
+        return fail_test("Expected [2, 1] (priority order), got " + str(call_order))
+
+    return pass_test()
+
+
+# ===============================
+# WeakRef and Memory Management Tests
+# ===============================
+
+
+func test_subscriber_weakref_to_signal() -> TestResult:
+    var test_signal = BetterSignal.new_void()
+    var _callback := func(): pass
+    var subscriber = test_signal.add(_callback)
+
+    # Subscriber should not be orphaned while signal exists
+    if subscriber.is_orphaned():
+        return fail_test("Expected subscriber to not be orphaned initially")
+
+    # Free the signal
+    test_signal = null
+    await Engine.get_main_loop().process_frame
+
+    # Subscriber should now be orphaned (signal weakref is invalid)
+    if not subscriber.is_orphaned():
+        return fail_test("Expected subscriber to be orphaned after signal freed")
+
+    return pass_test()
+
+
+func test_subscriber_handles_freed_signal_gracefully() -> TestResult:
+    var test_signal = BetterSignal.new_void()
+    var call_count := [0]
+    var _callback := func(): call_count[0] += 1
+    var subscriber = test_signal.add(_callback)
+
+    # Emit normally first
+    test_signal.emit()
+
+    if call_count[0] != 1:
+        return fail_test("Expected 1 call, got " + str(call_count[0]))
+
+    # Free the signal
+    test_signal = null
+    await Engine.get_main_loop().process_frame
+
+    # Try to emit to the subscriber directly (should handle gracefully)
+    subscriber.emit_to([])
+
+    # Should still be 1 (subscriber detects freed signal)
+    if call_count[0] != 1:
+        return fail_test("Expected still 1 call after freed signal, got " + str(call_count[0]))
+
+    return pass_test()
+
+
+# ===============================
+# Edge Cases and Additional Scenarios
+# ===============================
+
+
+func test_multiple_emissions_with_delay() -> TestResult:
+    var test_signal = BetterSignal.new(TYPE_INT)
+    var received_values: Array[int] = []
+    var _callback := func(value: int): received_values.append(value)
+
+    test_signal.add(_callback).with_delay_frames(1)
+
+    # Emit multiple times rapidly
+    test_signal.emit(1)
+    test_signal.emit(2)
+    test_signal.emit(3)
+
+    # Wait for all delays to complete
+    for i in 5:
+        await Engine.get_main_loop().process_frame
+
+    # All values should be received in order
+    if received_values != [1, 2, 3]:
+        return fail_test("Expected [1, 2, 3], got " + str(received_values))
+
+    return pass_test()
+
+
+func test_delay_preserves_emission_order() -> TestResult:
+    var test_signal = BetterSignal.new(TYPE_STRING)
+    var received_values: Array[String] = []
+    var _callback := func(value: String): received_values.append(value)
+
+    test_signal.add(_callback).with_delay_frames(2)
+
+    # Emit in specific order
+    test_signal.emit("first")
+    test_signal.emit("second")
+    test_signal.emit("third")
+
+    # Wait for delays
+    for i in 6:
+        await Engine.get_main_loop().process_frame
+
+    # Order should be preserved
+    if received_values != ["first", "second", "third"]:
+        return fail_test("Expected order preserved, got " + str(received_values))
+
+    return pass_test()
+
+
+func test_removing_delayed_subscriber_before_execution() -> TestResult:
+    var test_signal = BetterSignal.new_void()
+    var call_count := [0]
+    var _callback := func(): call_count[0] += 1
+
+    test_signal.add(_callback).with_delay_frames(3)
+    test_signal.emit()
+
+    # Remove subscriber before delay completes
+    test_signal.remove(_callback)
+
+    # Wait past when it would have fired
+    for i in 5:
+        await Engine.get_main_loop().process_frame
+
+    # Should not have been called
+    if call_count[0] != 0:
+        return fail_test("Expected 0 calls (removed before delay), got " + str(call_count[0]))
+
+    return pass_test()
+
+
+func test_delay_ms_executes_after_time() -> TestResult:
+    var test_signal = BetterSignal.new_void()
+    var call_count := [0]
+    var _callback := func(): call_count[0] += 1
+
+    test_signal.add(_callback).with_delay_ms(100)
+    test_signal.emit()
+
+    # Should not be called immediately
+    if call_count[0] != 0:
+        return fail_test("Expected 0 calls immediately")
+
+    # Wait for delay to complete
+    await Engine.get_main_loop().create_timer(0.15).timeout
+
+    # Should have been called now
+    if call_count[0] != 1:
+        return fail_test("Expected 1 call after delay, got " + str(call_count[0]))
+
+    return pass_test()
+
+
+func test_subscriber_getters() -> TestResult:
+    var test_signal = BetterSignal.new_void()
+    var _callback := func(): pass
+
+    var subscriber = test_signal.add(_callback).with_delay_frames(5).with_priority(10).limited_to(3)
+
+    # Check getters return correct values
+    if subscriber.get_priority() != 10:
+        return fail_test("Expected priority 10, got " + str(subscriber.get_priority()))
+
+    if subscriber.get_uses_left() != 3:
+        return fail_test("Expected uses_left 3, got " + str(subscriber.get_uses_left()))
+
+    if subscriber.emit_delay_amount != 5:
+        return fail_test("Expected delay_amount 5, got " + str(subscriber.emit_delay_amount))
+
+    if subscriber.emit_delay_type != "process_frame":
+        return fail_test("Expected delay_type 'process_frame', got " + str(subscriber.emit_delay_type))
 
     return pass_test()
