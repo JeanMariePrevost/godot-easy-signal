@@ -86,3 +86,8 @@ func get_target_method() -> String:
 ## Gets the uses left of the listener before it removes itself on the next emit
 func get_uses_left() -> int:
     return _uses_left
+
+
+## Returns true if the callable or target object is null or has been freed
+func is_orphaned() -> bool:
+    return _callable == null or _target_object == null or not is_instance_valid(_target_object)
