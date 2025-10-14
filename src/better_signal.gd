@@ -206,7 +206,7 @@ func emit(...args: Array[Variant]) -> void:
             push_error("Payload could not be emitted. " + validation_result["reason"])
             return
 
-    for subscriber in _subscribers:
+    for subscriber in _subscribers.duplicate(): # Duplicate to work on a snapshot of the subscribers and avoid modifying the array while iterating
         subscriber.emit_to(args)
 
 
@@ -338,7 +338,7 @@ func _weakly_validate_callback(callback: Callable) -> Dictionary:
         return {"valid": false, "reason": "Callback is null"}
 
     if not callback.is_valid():
-        return {"valid": false, "reason": "Callback is not valid"}
+        return {"valid": false, "reason": "callback.is_valid() returned false"}
 
     # Attempt to validate argument types (works for named functions only I believe?)
     var target_object = callback.get_object()
@@ -353,8 +353,10 @@ func _weakly_validate_callback(callback: Callable) -> Dictionary:
 
     var script: Script = target_object.get_script()
     if script == null:
-        # Built-in methods can't be verified this way
-        return {"valid": true, "reason": "Callable is a built-in method (not introspectable)"}
+        # Built-in / unnamed methods only present argument count
+        if callback.get_argument_count() != _argument_count:
+            return {"valid": false, "reason": "Argument count mismatch (requires " + str(_argument_count) + ", has " + str(callback.get_argument_count()) + ")"}
+        return {"valid": true, "reason": "Callable is a built-in / unnamed method with the expected argument count"}
 
     var methods: Array[Dictionary] = script.get_script_method_list()
     for m in methods:

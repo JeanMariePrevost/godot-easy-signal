@@ -1401,3 +1401,532 @@ func test_signal_link_to_godot_signal_integration_with_button_node() -> TestResu
 
     button_node.queue_free()
     return assert_equal(1, call_count[0])
+
+
+# ===============================
+# Public API Methods Tests (find, validate_payload)
+# ===============================
+
+
+func test_find_returns_subscriber_for_existing_callback() -> TestResult:
+    var test_signal = BetterSignal.new_void()
+    var callback := func(): pass
+
+    var subscriber = test_signal.add(callback)
+    var found = test_signal.find(callback)
+
+    if found != subscriber:
+        return fail_test("Expected find() to return the same subscriber instance")
+
+    return pass_test()
+
+
+func test_find_returns_null_for_nonexistent_callback() -> TestResult:
+    var test_signal = BetterSignal.new_void()
+    var callback := func(): pass
+
+    var found = test_signal.find(callback)
+
+    if found != null:
+        return fail_test("Expected find() to return null for non-existent callback")
+
+    return pass_test()
+
+
+func test_find_distinguishes_between_different_callbacks() -> TestResult:
+    var test_signal = BetterSignal.new_void()
+    var callback1 := func(): pass
+    var callback2 := func(): pass
+
+    var subscriber1 = test_signal.add(callback1)
+    var found = test_signal.find(callback2)
+
+    if found == subscriber1:
+        return fail_test("Expected find() to distinguish between different callbacks")
+    if found != null:
+        return fail_test("Expected find() to return null for different callback")
+
+    return pass_test()
+
+
+func test_validate_payload_accepts_valid_payload() -> TestResult:
+    var test_signal = BetterSignal.new([TYPE_INT, TYPE_STRING])
+    var payload = [42, "hello"]
+
+    var result = test_signal.validate_payload(payload)
+
+    if not result["valid"]:
+        return fail_test("Expected valid payload to pass validation, reason: " + result["reason"])
+
+    return pass_test()
+
+
+func test_validate_payload_rejects_wrong_argument_count() -> TestResult:
+    var test_signal = BetterSignal.new([TYPE_INT, TYPE_STRING])
+    var payload = [42]  # Missing second argument
+
+    var result = test_signal.validate_payload(payload)
+
+    if result["valid"]:
+        return fail_test("Expected validation to fail for wrong argument count")
+    if not "count" in result["reason"].to_lower():
+        return fail_test("Expected reason to mention count mismatch, got: " + result["reason"])
+
+    return pass_test()
+
+
+func test_validate_payload_rejects_wrong_type() -> TestResult:
+    var test_signal = BetterSignal.new([TYPE_INT, TYPE_STRING])
+    var payload = ["hello", 42]  # Types swapped
+
+    var result = test_signal.validate_payload(payload)
+
+    if result["valid"]:
+        return fail_test("Expected validation to fail for wrong types")
+    if not "type" in result["reason"].to_lower():
+        return fail_test("Expected reason to mention type mismatch, got: " + result["reason"])
+
+    return pass_test()
+
+
+func test_validate_payload_accepts_variant_types() -> TestResult:
+    var test_signal = BetterSignal.new_untyped()
+    var payload = [42]
+
+    var result = test_signal.validate_payload(payload)
+
+    if not result["valid"]:
+        return fail_test("Expected variant signal to accept any payload, reason: " + result["reason"])
+
+    return pass_test()
+
+
+# ===============================
+# Callback Validation Edge Cases
+# ===============================
+
+
+func test_add_null_callback_rejected() -> TestResult:
+    var test_signal = BetterSignal.new_void()
+    var callback: Callable = Callable()  # Null callable
+
+    var subscriber = test_signal.add(callback)
+
+    if subscriber != null:
+        return fail_test("Expected add() to reject null callable")
+
+    return pass_test()
+
+
+func test_add_invalid_callback_rejected() -> TestResult:
+    var test_signal = BetterSignal.new(TYPE_INT)
+    var obj = RefCounted.new()
+    var callback = Callable(obj, "nonexistent_method")
+
+    var subscriber = test_signal.add(callback)
+
+    # Invalid callable should be rejected
+    if subscriber != null:
+        return fail_test("Expected add() to reject invalid callable")
+
+    return pass_test()
+
+
+func test_add_callback_with_wrong_argument_count() -> TestResult:
+    var test_signal = BetterSignal.new_typed("int", "float")
+    # Lambda with 1 argument when signal expects 2
+    var callback := func(_arg1): pass
+
+    var subscriber = test_signal.add(callback)
+
+    # Should be rejected due to argument count mismatch
+    return assert_null(subscriber)
+
+
+# ===============================
+# Godot Signal Linking Edge Cases
+# ===============================
+
+
+func test_link_to_godot_signal_with_null_source_rejected() -> TestResult:
+    var test_signal = BetterSignal.new_void()
+
+    # Should handle null gracefully
+    test_signal.link_to_godot_signal_by_name(null, "some_signal")
+
+    # Should not have added any links
+    return assert_equal(0, test_signal._godot_builtin_signals_links.size())
+
+
+func test_link_to_godot_signal_with_empty_signal_name_rejected() -> TestResult:
+    var test_signal = BetterSignal.new_void()
+
+    test_signal.link_to_godot_signal_by_name(Engine.get_main_loop(), "")
+
+    # Should not have added any links
+    return assert_equal(0, test_signal._godot_builtin_signals_links.size())
+
+
+func test_link_to_same_godot_signal_twice_does_not_duplicate() -> TestResult:
+    var test_signal = BetterSignal.new_void()
+    var godot_signal = Engine.get_main_loop().process_frame
+
+    test_signal.link_to_godot_signal(godot_signal)
+    test_signal.link_to_godot_signal(godot_signal)  # Second time should warn and not duplicate
+
+    # Should only have one link
+    var result = assert_equal(1, test_signal._godot_builtin_signals_links.size())
+
+    # Cleanup
+    test_signal.disconnect_from_all_godot_signals()
+
+    return result
+
+
+func test_disconnect_from_godot_signal_that_was_never_connected() -> TestResult:
+    var test_signal = BetterSignal.new_void()
+    var godot_signal = Engine.get_main_loop().process_frame
+
+    var result = test_signal.disconnect_from_godot_signal(godot_signal)
+
+    if result:
+        return fail_test("Expected disconnect to return false for never-connected signal")
+
+    return pass_test()
+
+
+# ===============================
+# BetterSignalSubscriber Getter Tests
+# ===============================
+
+
+func test_subscriber_get_target_object_returns_correct_object() -> TestResult:
+    var test_signal = BetterSignal.new_typed("bool")
+    var test_obj = Node.new()
+    var callback = Callable(test_obj, "set_process")
+
+    var subscriber = test_signal.add(callback)
+
+    return assert_equal(subscriber.get_target_object(), test_obj, "Expected get_target_object() to return the callback's object")
+
+
+func test_subscriber_get_target_object_for_lambda_has_correct_metadata() -> TestResult:
+    var test_signal = BetterSignal.new_void()
+    var subscriber = test_signal.add(func(): pass)
+
+    # Ensure target object is non-null and of type Object and that the method name is "<anonymous lambda>"
+    if subscriber.get_target_object() == null or subscriber.get_target_object() is not Object:
+        return fail_test("Expected get_target_object() to return a non-null object")
+    if subscriber.get_target_method() != "<anonymous lambda>":
+        return fail_test("Expected get_target_method() to return '<anonymous lambda>' for lambda, got: " + subscriber.get_target_method())
+
+    return pass_test()
+
+
+# ===============================
+# Fluent API Multiple Calls Tests
+# ===============================
+
+
+func test_calling_once_multiple_times_last_wins() -> TestResult:
+    var test_signal = BetterSignal.new_void()
+    var call_count := [0]
+    var callback := func(): call_count[0] += 1
+
+    var subscriber = test_signal.add(callback)
+    subscriber.once()
+    subscriber.limited_to(5)  # Should override once
+
+    for i in 3:
+        test_signal.emit()
+
+    if call_count[0] != 3:
+        return fail_test("Expected 3 calls (limited_to should override once), got " + str(call_count[0]))
+
+    return pass_test()
+
+
+func test_calling_limited_to_multiple_times_last_wins() -> TestResult:
+    var test_signal = BetterSignal.new_void()
+    var call_count := [0]
+    var callback := func(): call_count[0] += 1
+
+    var subscriber = test_signal.add(callback)
+    subscriber.limited_to(2)
+    subscriber.limited_to(1)  # Should override to 1
+
+    test_signal.emit()
+    test_signal.emit()
+
+    if call_count[0] != 1:
+        return fail_test("Expected 1 call (second limited_to should win), got " + str(call_count[0]))
+
+    return pass_test()
+
+
+func test_changing_delay_type_multiple_times_last_wins() -> TestResult:
+    var test_signal = BetterSignal.new_void()
+    var callback := func(): pass
+
+    var subscriber = test_signal.add(callback)
+    subscriber.with_delay_frames(5)
+    subscriber.with_delay_physics_frames(3)
+    subscriber.with_delay_ms(100)  # Should win
+
+    if subscriber.emit_delay_type != "ms":
+        return fail_test("Expected delay_type to be 'ms', got " + subscriber.emit_delay_type)
+    if subscriber.emit_delay_amount != 100:
+        return fail_test("Expected delay_amount to be 100, got " + str(subscriber.emit_delay_amount))
+
+    return pass_test()
+
+
+func test_negative_delay_frames() -> TestResult:
+    var test_signal = BetterSignal.new_void()
+    var call_count := [0]
+    var callback := func(): call_count[0] += 1
+
+    var subscriber = test_signal.add(callback)
+    subscriber.with_delay_frames(-5)  # Negative delay
+
+    test_signal.emit()
+
+    # Should probably execute immediately (or emit has undefined behavior)
+    # This test documents the actual behavior
+    if call_count[0] != 1:
+        return fail_test("Expected immediate execution with negative delay, got " + str(call_count[0]) + " calls")
+
+    return pass_test()
+
+
+# ===============================
+# Reentrancy Tests
+# ===============================
+
+
+func test_adding_subscriber_during_emission() -> TestResult:
+    var test_signal = BetterSignal.new_void()
+    var call_count := [0]
+    var second_callback := func():
+        print("Second callback will take count from " + str(call_count[0]) + " to " + str(call_count[0] + 100))
+        call_count[0] += 100
+
+    var first_callback := func():
+        print("First callback will take count from " + str(call_count[0]) + " to " + str(call_count[0] + 1))
+        call_count[0] += 1
+        test_signal.add(second_callback)  # Add during emission
+
+    test_signal.add(first_callback)
+    test_signal.emit()
+
+    # First emit should only call first_callback
+    if call_count[0] != 1:
+        return fail_test("Expected 1 call on first emit, got " + str(call_count[0]))
+
+    # Second emit should call both
+    test_signal.emit()
+    if call_count[0] != 102:  # 1 + 1 + 100
+        return fail_test("Expected 102 total calls after second emit, got " + str(call_count[0]))
+
+    return pass_test()
+
+
+func test_removing_subscriber_during_emission() -> TestResult:
+    var test_signal = BetterSignal.new_void()
+    var call_count := [0]
+    var second_callback := func(): call_count[0] += 100
+
+    var first_callback := func():
+        call_count[0] += 1
+        test_signal.remove(second_callback)  # Remove during emission
+
+    test_signal.add(first_callback)
+    test_signal.add(second_callback)
+    test_signal.emit()
+
+    # Both should have been called (removal happens after iteration started)
+    # OR first removes second before it fires (implementation dependent)
+    # This test documents actual behavior
+    if call_count[0] < 1:
+        return fail_test("Expected at least first callback to fire, got " + str(call_count[0]))
+
+    return pass_test()
+
+
+func test_recursive_emission() -> TestResult:
+    var test_signal = BetterSignal.new(TYPE_INT)
+    var call_count := [0]
+
+    var recursive_callback := func(depth: int):
+        call_count[0] += 1
+        if depth > 0:
+            test_signal.emit(depth - 1)  # Recursive emit
+
+    test_signal.add(recursive_callback)
+    test_signal.emit(3)  # Should call 4 times total (3, 2, 1, 0)
+
+    if call_count[0] != 4:
+        return fail_test("Expected 4 calls from recursive emission, got " + str(call_count[0]))
+
+    return pass_test()
+
+
+# ===============================
+# Memory Management Edge Cases
+# ===============================
+
+
+func test_target_object_freed_during_delay() -> TestResult:
+    var test_signal = BetterSignal.new_typed("bool")
+    var call_count := [0]
+    var obj = Node.new()
+
+    var callback = Callable(obj, "set_process")
+    test_signal.add(callback).with_delay_frames(2)
+    test_signal.add(func(_arg): call_count[0] += 1)
+
+    test_signal.emit(false)
+
+    # Free the object during delay
+    obj.free()
+    obj = null
+
+    # Wait for delay
+    for i in 3:
+        await Engine.get_main_loop().process_frame
+
+    # Should not crash (gracefully handle freed object) and stillproceed with dispatch
+    return assert_equal(1, call_count[0])
+
+
+func test_dispose_prevents_delayed_invocation() -> TestResult:
+    var test_signal = BetterSignal.new_void()
+    var call_count := [0]
+    var callback := func(): call_count[0] += 1
+
+    var subscriber = test_signal.add(callback).with_delay_frames(2)
+    test_signal.emit()
+
+    # Dispose the subscriber immediately
+    subscriber.dispose()
+
+    # Wait for delay period
+    for i in 3:
+        await Engine.get_main_loop().process_frame
+
+    # Should not have been called
+    if call_count[0] != 0:
+        return fail_test("Expected disposed subscriber to not be called, got " + str(call_count[0]) + " calls")
+
+    return pass_test()
+
+
+func test_is_orphaned_detects_null_callable() -> TestResult:
+    var test_signal = BetterSignal.new_void()
+    var callback := func(): pass
+
+    var subscriber = test_signal.add(callback)
+    subscriber.dispose()  # This nullifies the callable
+
+    if not subscriber.is_orphaned():
+        return fail_test("Expected subscriber to be orphaned after dispose")
+
+    return pass_test()
+
+
+# ===============================
+# Priority Edge Cases
+# ===============================
+
+
+func test_priority_ties_maintain_add_order() -> TestResult:
+    var test_signal = BetterSignal.new_void()
+    var results: Array[int] = []
+
+    var callback1 := func(): results.append(1)
+    var callback2 := func(): results.append(2)
+    var callback3 := func(): results.append(3)
+
+    # All have same priority
+    test_signal.add(callback1).with_priority(5)
+    test_signal.add(callback2).with_priority(5)
+    test_signal.add(callback3).with_priority(5)
+
+    test_signal.emit()
+
+    # Should maintain add order when priorities are equal
+    if results != [1, 2, 3]:
+        return fail_test("Expected [1, 2, 3] for equal priorities, got " + str(results))
+
+    return pass_test()
+
+
+func test_extreme_priority_values() -> TestResult:
+    var test_signal = BetterSignal.new_void()
+    var results: Array[int] = []
+
+    var callback1 := func(): results.append(1)
+    var callback2 := func(): results.append(2)
+    var callback3 := func(): results.append(3)
+
+    test_signal.add(callback1).with_priority(-9223372036854775808)  # MIN_INT
+    test_signal.add(callback2).with_priority(0)
+    test_signal.add(callback3).with_priority(9223372036854775807)  # MAX_INT
+
+    test_signal.emit()
+
+    # Highest priority first
+    if results != [3, 2, 1]:
+        return fail_test("Expected [3, 2, 1] for extreme priorities, got " + str(results))
+
+    return pass_test()
+
+
+# ===============================
+# Complex Scenario Tests
+# ===============================
+
+
+func test_complex_chaining_all_fluent_methods() -> TestResult:
+    var test_signal = BetterSignal.new(TYPE_INT)
+    var received_values: Array[int] = []
+    var callback := func(val: int): received_values.append(val)
+
+    test_signal.add(callback).with_priority(10).with_delay_frames(1).limited_to(2)
+
+    test_signal.emit(1)
+    test_signal.emit(2)
+    test_signal.emit(3)  # Should not fire (limited to 2)
+
+    # Wait for delays
+    for i in 3:
+        await Engine.get_main_loop().process_frame
+
+    if received_values != [1, 2]:
+        return fail_test("Expected [1, 2] from chained methods, got " + str(received_values))
+
+    return pass_test()
+
+
+func test_emit_typed_signal_with_multiple_argument_types() -> TestResult:
+    var test_signal = BetterSignal.new([TYPE_INT, TYPE_STRING, TYPE_BOOL, TYPE_VECTOR2])
+    var received_args: Array = [null, null, null, null]
+    var callback := func(a: int, b: String, c: bool, d: Vector2):
+        received_args[0] = a
+        received_args[1] = b
+        received_args[2] = c
+        received_args[3] = d
+
+    test_signal.add(callback)
+    test_signal.emit(42, "test", true, Vector2(1.5, 2.5))
+
+    if received_args[0] != 42:
+        return fail_test("Expected first arg to be 42, got " + str(received_args[0]))
+    if received_args[1] != "test":
+        return fail_test("Expected second arg to be 'test', got " + str(received_args[1]))
+    if received_args[2] != true:
+        return fail_test("Expected third arg to be true, got " + str(received_args[2]))
+    if received_args[3] != Vector2(1.5, 2.5):
+        return fail_test("Expected fourth arg to be Vector2(1.5, 2.5), got " + str(received_args[3]))
+
+    return pass_test()
