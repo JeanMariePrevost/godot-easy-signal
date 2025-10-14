@@ -472,14 +472,14 @@ func test_init_array_with_null() -> TestResult:
     return pass_test()
 
 
-# ===============================
-# Basic operations
-# ===============================
+# # ===============================
+# # Basic operations
+# # ===============================
 
 
 func test_add_handler() -> TestResult:
     var test_signal = BetterSignal.new(TYPE_INT)
-    var callback := func(_payload): pass
+    var callback: Callable = func(_payload): pass
 
     var listener = test_signal.add(callback)
 

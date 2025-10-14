@@ -48,7 +48,7 @@ var _argument_count: int = 0  ## The number of arguments
 var _is_variant: bool = false  ## Whether the signal is a variant signal (accepts any arguments)
 var _is_void: bool = false  ## Whether the signal is a void signal (accepts no arguments)
 
-var _listeners: Array[BetterSignalListener]
+var _subscribers: Array[BetterSignalSubscriber]
 
 
 func get_argument_types() -> Array[String]:
@@ -143,20 +143,20 @@ func _init(payload_signature: Variant = TYPE_NIL):
 # ===============================
 
 
-## Adds a listener to the signal
+## Adds a subscriber to the signal
 ## Adding the same callable more than once has no effect
-func add(callback: Callable) -> BetterSignalListener:
+func add(callback: Callable) -> BetterSignalSubscriber:
     ###########################################################################################
     # LIMITATION NOTE: Currently it is not possible to neither fully validate a callable signature nor "dectect/handle" a failed call
     # This means that it _will_ error out and log to the console
-    # But it will proceed with the other listeners just fine (though it causes a breakpoint when in the editor, but you can "continue" from there)
+    # But it will proceed with the other subscribers just fine (though it causes a breakpoint when in the editor, but you can "continue" from there)
     #
     # So...
     # TODO: Implement a way to detect and handle failed calls if there ever is a proper way to achieve this
     ###########################################################################################
-    var listener: BetterSignalListener = find(callback)
-    if listener != null:
-        return listener
+    var subscriber: BetterSignalSubscriber = find(callback)
+    if subscriber != null:
+        return subscriber
 
     var best_effort_validation: Dictionary = _weakly_validate_callback(callback)
     print("Best effort validation: ", best_effort_validation)
@@ -164,14 +164,14 @@ func add(callback: Callable) -> BetterSignalListener:
         push_error('Callback "' + callback.get_method() + '" could not be added. ' + best_effort_validation["reason"])
         return null
 
-    listener = BetterSignalListener.new(callback, self)
-    _listeners.append(listener)
-    return listener
+    subscriber = BetterSignalSubscriber.new(callback, self)
+    _subscribers.append(subscriber)
+    return subscriber
 
 
 ## Emits the signal with the given payload
 func emit(...args: Array[Variant]) -> void:
-    # TODO: Implement priority (needs constant sorting? On changes? We need to detect changes in the listeners? They report back?..)
+    # TODO: Implement priority (needs constant sorting? On changes? We need to detect changes in the subscribers? They report back?..)
 
     # Validate payload
     if(_is_variant):
@@ -188,23 +188,23 @@ func emit(...args: Array[Variant]) -> void:
             push_error("Payload could not be emitted. " + validation_result["reason"])
             return
 
-    for listener in _listeners:
-        listener.emit_to(args)
+    for subscriber in _subscribers:
+        subscriber.emit_to(args)
 
 
-## Removes a listener from the signal, by its callable
-## Returns true if a listener was removed, false otherwise
+## Removes a subscriber from the signal, by its callable
+## Returns true if a subscriber was removed, false otherwise
 func remove(callback: Callable) -> bool:
-    for listener in _listeners:
-        if listener.has_callable(callback):
-            _listeners.erase(listener)
+    for subscriber in _subscribers:
+        if subscriber.has_callable(callback):
+            _subscribers.erase(subscriber)
             return true
     return false
 
 
-## Removes all listeners from the signal
+## Removes all subscribers from the signal
 func remove_all() -> void:
-    _listeners.clear()
+    _subscribers.clear()
 
 
 # ===============================
@@ -214,18 +214,18 @@ func remove_all() -> void:
 
 ## Checks if the callable is already registered to the signal
 func has(callback: Callable) -> bool:
-    for listener in _listeners:
-        if listener.has_callable(callback):
+    for subscriber in _subscribers:
+        if subscriber.has_callable(callback):
             return true
     return false
 
 
-## Finds a listener by its callable
-## Returns the listener if found, null otherwise
-func find(callback: Callable) -> BetterSignalListener:
-    for listener in _listeners:
-        if listener.has_callable(callback):
-            return listener
+## Finds a subscriber by its callable
+## Returns the subscriber if found, null otherwise
+func find(callback: Callable) -> BetterSignalSubscriber:
+    for subscriber in _subscribers:
+        if subscriber.has_callable(callback):
+            return subscriber
     return null
 
 
@@ -304,9 +304,9 @@ func validate_payload(payload: Array[Variant]) -> Dictionary:
     return {"valid": true, "reason": "Payload is valid"}
 
 
-## Called by listeners when their priority is changed
-func _sort_listeners_by_priority() -> void:
-    _listeners.sort_custom(func(a: BetterSignalListener, b: BetterSignalListener): return a.get_priority() > b.get_priority())
+## Called by subscribers when their priority is changed
+func _sort_subscribers_by_priority() -> void:
+    _subscribers.sort_custom(func(a: BetterSignalSubscriber, b: BetterSignalSubscriber): return a.get_priority() > b.get_priority())
 
 
 ## Prints a detailed and formatted summary of the signal's internal state.
@@ -333,17 +333,23 @@ func debug_pretty_print_state() -> void:
     print(" BetterSignal Debug Summary")
     print("──────────────────────────────────────────────")
     print("Payload: " + signal_type + " " + signature)
-    print("Listeners: " + str(_listeners))
+    print("Subscribers: " + str(_subscribers))
     print("")
     
-    # Listeners section
-    var count := _listeners.size()
+    # Subscribers section
+    var count := _subscribers.size()
     if count == 0:
-        print("Listeners: none")
+        print("Subscribers: none")
     else:
-        print("Listeners (" + str(count) + "):")
+        print("Subscribers (" + str(count) + "):")
         for i in range(count):
-            var l = _listeners[i]
+            var l = _subscribers[i]
+            if l.get_target_object() == null:
+                print("  • #" + str(i) + " | [INVALID -> target object is null]")
+                continue
+            if l.get_target_object() != null and l.get_target_object().is_instance_valid():
+                print("  • #" + str(i) + " | [INVALID -> target object is no longer in memory]")
+                continue
             print("  • #" + str(i) + " | priority=" + str(l.get_priority()) + " | uses_left=" + str(l.get_uses_left()) + " | " + l.get_target_object().get_script().get_path() + " -> " + l.get_target_method() + "()")
     
     # Footer
