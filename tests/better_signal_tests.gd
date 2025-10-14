@@ -1232,3 +1232,162 @@ func test_disabling_signal_does_not_stop_queued_delayed_emissions() -> TestResul
     for i in 2:
         await Engine.get_main_loop().process_frame
     return assert_true(call_count[0] > 0, "Expected 1 call after disable()")
+
+
+# ===============================
+# Godot signal linking Tests
+# ===============================
+
+
+func test_signal_link_to_godot_signal_adds_link_to_internal_list() -> TestResult:
+    var test_signal = BetterSignal.new_void()
+    test_signal.link_to_godot_signal(Engine.get_main_loop().process_frame)
+    return assert_equal(1, test_signal._godot_builtin_signals_links.size())
+
+
+func test_adding_same_callback_multiple_times_does_not_duplicate() -> TestResult:
+    var test_signal = BetterSignal.new_void()
+    var call_count := [0]
+    var callback := func(): call_count[0] += 1
+
+    # Add the same callback multiple times
+    test_signal.add(callback)
+    test_signal.add(callback)
+    test_signal.add(callback)
+
+    # Should only have one subscriber
+    return assert_equal(1, test_signal._subscribers.size(), "Expected only 1 subscriber when adding same callback multiple times")
+
+
+func test_adding_same_callback_multiple_times_only_calls_once() -> TestResult:
+    var test_signal = BetterSignal.new_void()
+    var call_count := [0]
+    var callback := func(): call_count[0] += 1
+
+    # Add the same callback multiple times
+    test_signal.add(callback)
+    test_signal.add(callback)
+    test_signal.add(callback)
+
+    # Emit and verify it only calls once
+    test_signal.emit()
+    return assert_equal(1, call_count[0], "Expected callback to be called only once despite multiple adds")
+
+
+func test_signal_link_to_godot_signal_by_name_adds_link_to_internal_list() -> TestResult:
+    var test_signal = BetterSignal.new_void()
+    test_signal.link_to_godot_signal_by_name(Engine.get_main_loop(), "process_frame")
+    return assert_equal(1, test_signal._godot_builtin_signals_links.size())
+
+
+func test_signal_link_to_godot_signal_emits_with_it() -> TestResult:
+    var test_signal = BetterSignal.new_void()
+    var call_count := [0]
+    test_signal.add(func(): call_count[0] += 1)
+    test_signal.link_to_godot_signal(Engine.get_main_loop().process_frame)
+    await Engine.get_main_loop().process_frame
+    return assert_equal(1, call_count[0])
+
+
+func test_signal_link_to_godot_signal_by_name_emits_with_it() -> TestResult:
+    var test_signal = BetterSignal.new_void()
+    var call_count := [0]
+    test_signal.add(func(): call_count[0] += 1)
+    test_signal.link_to_godot_signal_by_name(Engine.get_main_loop(), "process_frame")
+    await Engine.get_main_loop().process_frame
+    return assert_equal(1, call_count[0])
+
+
+func test_signal_add_by_ref_remove_by_name_removes_link() -> TestResult:
+    var test_signal = BetterSignal.new_void()
+    var godot_signal = Engine.get_main_loop().process_frame
+    test_signal.link_to_godot_signal(godot_signal)
+    test_signal.disconnect_from_godot_signal_by_name(Engine.get_main_loop(), "process_frame")
+    return assert_equal(0, test_signal._godot_builtin_signals_links.size())
+
+
+func test_signal_add_by_name_remove_by_ref_removes_link() -> TestResult:
+    var test_signal = BetterSignal.new_void()
+    test_signal.link_to_godot_signal_by_name(Engine.get_main_loop(), "process_frame")
+    var godot_signal = Engine.get_main_loop().process_frame
+    test_signal.disconnect_from_godot_signal(godot_signal)
+    return assert_equal(0, test_signal._godot_builtin_signals_links.size())
+
+
+func test_signal_disconnect_from_godot_signal_removes_link_from_internal_list() -> TestResult:
+    var test_signal = BetterSignal.new_void()
+    var godot_signal = Engine.get_main_loop().process_frame
+    test_signal.link_to_godot_signal(godot_signal)
+    test_signal.disconnect_from_godot_signal(godot_signal)
+    return assert_equal(0, test_signal._godot_builtin_signals_links.size())
+
+
+func test_signal_disconnect_from_godot_signal_by_name_removes_link_from_internal_list() -> TestResult:
+    var test_signal = BetterSignal.new_void()
+    test_signal.link_to_godot_signal_by_name(Engine.get_main_loop(), "process_frame")
+    test_signal.disconnect_from_godot_signal_by_name(Engine.get_main_loop(), "process_frame")
+    return assert_equal(0, test_signal._godot_builtin_signals_links.size())
+
+
+func test_signal_disconnect_from_godot_signal_stops_emitting_with_it() -> TestResult:
+    var test_signal = BetterSignal.new_void()
+    var call_count := [0]
+    test_signal.add(func(): call_count[0] += 1)
+    var godot_signal = Engine.get_main_loop().process_frame
+    test_signal.link_to_godot_signal(godot_signal)
+    test_signal.disconnect_from_godot_signal(godot_signal)
+    await Engine.get_main_loop().process_frame
+    return assert_equal(0, call_count[0])
+
+
+func test_signal_disconnect_from_godot_signal_by_name_stops_emitting_with_it() -> TestResult:
+    var test_signal = BetterSignal.new_void()
+    var call_count := [0]
+    test_signal.add(func(): call_count[0] += 1)
+    test_signal.link_to_godot_signal_by_name(Engine.get_main_loop(), "process_frame")
+    test_signal.disconnect_from_godot_signal_by_name(Engine.get_main_loop(), "process_frame")
+    await Engine.get_main_loop().process_frame
+    return assert_equal(0, call_count[0])
+
+
+func test_signal_disconnect_from_all_godot_signals_removes_all_links_from_internal_list() -> TestResult:
+    var test_signal = BetterSignal.new_void()
+    test_signal.link_to_godot_signal(Engine.get_main_loop().process_frame)
+    test_signal.link_to_godot_signal_by_name(Engine.get_main_loop(), "process_frame")
+    test_signal.disconnect_from_all_godot_signals()
+    return assert_equal(0, test_signal._godot_builtin_signals_links.size())
+
+
+func test_signal_disconnect_from_all_godot_signals_stops_emitting_linked_by_ref() -> TestResult:
+    var test_signal = BetterSignal.new_void()
+    var call_count := [0]
+    test_signal.add(func(): call_count[0] += 1)
+    var godot_signal = Engine.get_main_loop().process_frame
+    test_signal.link_to_godot_signal(godot_signal)
+    test_signal.disconnect_from_all_godot_signals()
+    await Engine.get_main_loop().process_frame
+    return assert_equal(0, call_count[0])
+
+
+func test_signal_disconnect_from_all_godot_signals_stops_emitting_linked_by_name() -> TestResult:
+    var test_signal = BetterSignal.new_void()
+    var call_count := [0]
+    test_signal.add(func(): call_count[0] += 1)
+    test_signal.link_to_godot_signal_by_name(Engine.get_main_loop(), "process_frame")
+    test_signal.disconnect_from_all_godot_signals()
+    await Engine.get_main_loop().process_frame
+    return assert_equal(0, call_count[0])
+
+
+func test_signal_link_to_godot_signal_integration_with_button_node() -> TestResult:
+    var test_signal = BetterSignal.new_void()
+    var call_count := [0]
+    var button_node = Button.new()
+    Engine.get_main_loop().root.add_child(button_node)
+    test_signal.link_to_godot_signal(button_node.pressed)
+    test_signal.add(func(): call_count[0] += 1)
+
+    button_node.pressed.emit()
+
+    button_node.queue_free()
+    return assert_equal(1, call_count[0])

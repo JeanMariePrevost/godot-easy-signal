@@ -229,6 +229,58 @@ func enable() -> void:
 func is_enabled() -> bool:
     return _is_enabled
 
+
+
+
+# ===============================
+# Godot's built-in signal integration
+# ===============================
+
+## Collection that tracks the built-in Godot signals this BetterSignal is linked to
+var _godot_builtin_signals_links: Array[Dictionary] = []
+
+## Makes this signal trigger from a given signal's emissions
+func link_to_godot_signal(godot_signal: Signal) -> void:
+    var source: Object = godot_signal.get_object()
+    var signal_name: String = godot_signal.get_name()
+    link_to_godot_signal_by_name(source, signal_name)
+
+
+## Makes this signal trigger from a given signal's emissions
+func link_to_godot_signal_by_name(source: Object, signal_name: String) -> void:
+    _godot_builtin_signals_links.append({"source": source, "signal_name": signal_name})
+    source.connect(signal_name, emit)
+
+
+
+## Disconnects this BetterSignal from a linked Godot signal
+## Returns true if the signal was disconnected, false if it was not connected in the first place
+func disconnect_from_godot_signal(godot_signal: Signal) -> bool:
+    var source: Object = godot_signal.get_object()
+    var signal_name: String = godot_signal.get_name()
+    return disconnect_from_godot_signal_by_name(source, signal_name)
+
+## Disconnects this BetterSignal from a linked Godot signal
+## Returns true if the signal was disconnected, false if it was not connected in the first place
+func disconnect_from_godot_signal_by_name(source: Object, signal_name: String) -> bool:
+    for link in _godot_builtin_signals_links:
+        if link.has("source") and link.has("signal_name") and link["source"] == source and link["signal_name"] == signal_name:
+            _godot_builtin_signals_links.erase(link)
+
+    if not source.is_connected(signal_name, emit):
+        return false
+    source.disconnect(signal_name, emit)
+    return true
+
+
+## Disconnects this BetterSignal from all linked Godot signals
+func disconnect_from_all_godot_signals() -> void:
+    for link in _godot_builtin_signals_links:
+        if link.has("source") and link["source"] != null and link.has("signal_name") and link["source"].is_connected(link["signal_name"], emit):
+            link["source"].disconnect(link["signal_name"], emit)
+    _godot_builtin_signals_links.clear()
+
+
 # ===============================
 # Utility
 # ===============================
