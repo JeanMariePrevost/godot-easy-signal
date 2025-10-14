@@ -214,6 +214,7 @@ func remove_all() -> void:
 
 
 ## Makes the signal no longer emit to its subscribers until re-enabled
+## Note: This will not prevent queued delayed emissions from going through, it only prevents _new_ emissions
 func disable() -> void:
     _is_enabled = false
 

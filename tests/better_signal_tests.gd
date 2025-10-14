@@ -1155,3 +1155,80 @@ func test_subscriber_getters() -> TestResult:
         return fail_test("Expected delay_type 'process_frame', got " + str(subscriber.emit_delay_type))
 
     return pass_test()
+
+
+# ===============================
+# Enable/Disable Tests
+# ===============================
+
+
+func test_signal_enabled_by_default() -> TestResult:
+    var test_signal = BetterSignal.new_void()
+    return assert_true(test_signal.is_enabled(), "Expected signal to be enabled by default after creation")
+
+
+func test_signal_disable_changes_enabled_state() -> TestResult:
+    var test_signal = BetterSignal.new_void()
+    test_signal.disable()
+    return assert_false(test_signal.is_enabled(), "Expected signal to be disabled after disable()")
+
+
+func test_signal_enable_changes_enabled_state() -> TestResult:
+    var test_signal = BetterSignal.new_void()
+    test_signal.disable()
+    test_signal.enable()
+    return assert_true(test_signal.is_enabled(), "Expected signal to be enabled after enable()")
+
+
+func test_signal_disabled_does_not_emit() -> TestResult:
+    var test_signal = BetterSignal.new_void()
+    var call_count := [0]
+    var _callback := func(): call_count[0] += 1
+    test_signal.add(_callback)
+    test_signal.disable()
+    return assert_false(call_count[0] > 0, "Expected 0 calls after disable()")
+
+
+func test_signal_re_enabled_does_emit() -> TestResult:
+    var test_signal = BetterSignal.new_void()
+    var call_count := [0]
+    var _callback := func(): call_count[0] += 1
+    test_signal.add(_callback)
+    test_signal.disable()
+    test_signal.enable()
+    test_signal.emit()
+    return assert_true(call_count[0] > 0, "Expected 1 call after enable()")
+
+
+func test_signal_disabled_with_delay_does_not_emit() -> TestResult:
+    var test_signal = BetterSignal.new_void()
+    var call_count := [0]
+    var _callback := func(): call_count[0] += 1
+    test_signal.add(_callback)
+    test_signal.disable()
+    test_signal.emit()
+    return assert_false(call_count[0] > 0, "Expected 0 calls after disable()")
+
+
+func test_signal_disabled_signal_does_not_queue_delayed_emissions() -> TestResult:
+    var test_signal = BetterSignal.new_void()
+    var call_count := [0]
+    var _callback := func(): call_count[0] += 1
+    test_signal.add(_callback).with_delay_frames(2)
+    test_signal.disable()
+    test_signal.emit()
+    for i in 2:
+        await Engine.get_main_loop().process_frame
+    return assert_false(call_count[0] > 0, "Expected 0 calls after disable()")
+
+
+func test_disabling_signal_does_not_stop_queued_delayed_emissions() -> TestResult:
+    var test_signal = BetterSignal.new_void()
+    var call_count := [0]
+    var _callback := func(): call_count[0] += 1
+    test_signal.add(_callback).with_delay_frames(2)
+    test_signal.emit()
+    test_signal.disable()
+    for i in 2:
+        await Engine.get_main_loop().process_frame
+    return assert_true(call_count[0] > 0, "Expected 1 call after disable()")
