@@ -159,7 +159,7 @@ func add(callback: Callable) -> BetterSignalSubscriber:
         return subscriber
 
     var best_effort_validation: Dictionary = _weakly_validate_callback(callback)
-    print("Best effort validation: ", best_effort_validation)
+    # print("Best effort validation: ", best_effort_validation)
     if not best_effort_validation["valid"]:
         push_error('Callback "' + callback.get_method() + '" could not be added. ' + best_effort_validation["reason"])
         return null

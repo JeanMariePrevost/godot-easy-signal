@@ -1,6 +1,6 @@
 extends TestFile
 
-## NOTE: Mostly AI-generated and unverified
+## NOTE: Mostly AI-generated and unverified tests
 
 # ===============================
 # Initialization Tests
@@ -746,5 +746,38 @@ func test_priority_resets_after_remove() -> TestResult:
 
     if results != [3, 2, 1]:
         return fail_test("Expected results to be [3,2,1], got " + str(results))
+
+    return pass_test()
+
+
+# ===============================
+# Delay Tests
+# ===============================
+
+
+func test_delay_prevents_immediate_execution() -> TestResult:
+    var test_signal = BetterSignal.new_void()
+    var call_count := [0]
+    var _callback := func(): call_count[0] += 1
+
+    test_signal.add(_callback).with_delay_frames(3)
+    test_signal.emit()
+
+    # Callback should NOT have been called yet (delay prevents immediate execution)
+    if call_count[0] != 0:
+        return fail_test("Expected callback to not be called immediately with delay, got " + str(call_count[0]) + " calls")
+
+    # TODO: Is this actually _really_ precise down to the frame? Is this test "fuzzy"?
+    await Engine.get_main_loop().process_frame
+    await Engine.get_main_loop().process_frame
+
+    if call_count[0] != 0:
+        return fail_test("Expected callback to not be called immediately with delay, got " + str(call_count[0]) + " calls")
+
+    await Engine.get_main_loop().process_frame
+    await Engine.get_main_loop().process_frame
+
+    if call_count[0] != 1:
+        return fail_test("Expected callback to be called once, got " + str(call_count[0]))
 
     return pass_test()

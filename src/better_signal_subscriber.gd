@@ -105,6 +105,8 @@ func with_delay_physics_frames(delay_amount: int) -> BetterSignalSubscriber:
 
 
 ## Sets a delay for the subscriber's emission handling, in milliseconds
+##
+## Note that priority cannot be guaranteed to be respected when using this delay type
 func with_delay_ms(delay_amount: int) -> BetterSignalSubscriber:
     emit_delay_amount = delay_amount
     emit_delay_type = "ms"
