@@ -48,6 +48,8 @@ var _argument_count: int = 0  ## The number of arguments
 var _is_variant: bool = false  ## Whether the signal is a variant signal (accepts any arguments)
 var _is_void: bool = false  ## Whether the signal is a void signal (accepts no arguments)
 
+var _is_enabled: bool = true  ## Whether the signal will actually emit to subscribers
+
 var _subscribers: Array[BetterSignalSubscriber]
 
 
@@ -171,7 +173,8 @@ func add(callback: Callable) -> BetterSignalSubscriber:
 
 ## Emits the signal with the given payload
 func emit(...args: Array[Variant]) -> void:
-    # TODO: Implement priority (needs constant sorting? On changes? We need to detect changes in the subscribers? They report back?..)
+    if not _is_enabled:
+        return
 
     # Validate payload
     if(_is_variant):
@@ -209,6 +212,21 @@ func remove(callback: Callable) -> bool:
 func remove_all() -> void:
     _subscribers.clear()
 
+
+## Makes the signal no longer emit to its subscribers until re-enabled
+func disable() -> void:
+    _is_enabled = false
+
+
+## Makes the signal emit to its subscribers again if it was disabled
+func enable() -> void:
+    _is_enabled = true
+
+
+## Returns whether the signal is enabled, meaning it will emit to its subscribers
+## True by default
+func is_enabled() -> bool:
+    return _is_enabled
 
 # ===============================
 # Utility
