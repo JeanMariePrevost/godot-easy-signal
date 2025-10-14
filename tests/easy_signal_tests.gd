@@ -8,7 +8,7 @@ extends TestFile
 
 
 func test_new_typed_single_type() -> TestResult:
-    var test_signal = BetterSignal.new_typed("int")
+    var test_signal = EasySignal.new_typed("int")
 
     if test_signal.get_argument_count() != 1:
         return fail_test("Expected argument count to be 1, got " + str(test_signal.get_argument_count()))
@@ -23,7 +23,7 @@ func test_new_typed_single_type() -> TestResult:
 
 
 func test_new_typed_multiple_types() -> TestResult:
-    var test_signal = BetterSignal.new_typed("int", "float", "String")
+    var test_signal = EasySignal.new_typed("int", "float", "String")
 
     if test_signal.get_argument_count() != 3:
         return fail_test("Expected argument count to be 3, got " + str(test_signal.get_argument_count()))
@@ -38,7 +38,7 @@ func test_new_typed_multiple_types() -> TestResult:
 
 
 func test_new_typed_bad_input_returns_null() -> TestResult:
-    var test_signal = BetterSignal.new_typed([["int", "float", "String"]])
+    var test_signal = EasySignal.new_typed([["int", "float", "String"]])
 
     if test_signal == null:
         return pass_test()
@@ -47,7 +47,7 @@ func test_new_typed_bad_input_returns_null() -> TestResult:
 
 
 func test_new_void() -> TestResult:
-    var test_signal = BetterSignal.new_void()
+    var test_signal = EasySignal.new_void()
 
     if test_signal.get_argument_count() != 0:
         return fail_test("Expected argument count to be 0, got " + str(test_signal.get_argument_count()))
@@ -62,7 +62,7 @@ func test_new_void() -> TestResult:
 
 
 func test_new_untyped() -> TestResult:
-    var test_signal = BetterSignal.new_untyped()
+    var test_signal = EasySignal.new_untyped()
 
     if test_signal.get_argument_count() != 1:
         return fail_test("Expected argument count to be 1, got " + str(test_signal.get_argument_count()))
@@ -77,7 +77,7 @@ func test_new_untyped() -> TestResult:
 
 
 func test_init_single_type_int() -> TestResult:
-    var test_signal = BetterSignal.new(TYPE_INT)
+    var test_signal = EasySignal.new(TYPE_INT)
 
     if test_signal.get_argument_count() != 1:
         return fail_test("Expected argument count to be 1, got " + str(test_signal.get_argument_count()))
@@ -92,7 +92,7 @@ func test_init_single_type_int() -> TestResult:
 
 
 func test_init_single_type_float() -> TestResult:
-    var test_signal = BetterSignal.new(TYPE_FLOAT)
+    var test_signal = EasySignal.new(TYPE_FLOAT)
 
     if test_signal.get_argument_count() != 1:
         return fail_test("Expected argument count to be 1, got " + str(test_signal.get_argument_count()))
@@ -107,7 +107,7 @@ func test_init_single_type_float() -> TestResult:
 
 
 func test_init_single_type_string() -> TestResult:
-    var test_signal = BetterSignal.new(TYPE_STRING)
+    var test_signal = EasySignal.new(TYPE_STRING)
 
     if test_signal.get_argument_count() != 1:
         return fail_test("Expected argument count to be 1, got " + str(test_signal.get_argument_count()))
@@ -122,7 +122,7 @@ func test_init_single_type_string() -> TestResult:
 
 
 func test_init_array_of_types() -> TestResult:
-    var test_signal = BetterSignal.new([TYPE_INT, TYPE_FLOAT])
+    var test_signal = EasySignal.new([TYPE_INT, TYPE_FLOAT])
 
     if test_signal.get_argument_count() != 2:
         return fail_test("Expected argument count to be 2, got " + str(test_signal.get_argument_count()))
@@ -137,7 +137,7 @@ func test_init_array_of_types() -> TestResult:
 
 
 func test_init_array_of_types_mixed() -> TestResult:
-    var test_signal = BetterSignal.new([TYPE_STRING, TYPE_BOOL, TYPE_VECTOR2])
+    var test_signal = EasySignal.new([TYPE_STRING, TYPE_BOOL, TYPE_VECTOR2])
 
     if test_signal.get_argument_count() != 3:
         return fail_test("Expected argument count to be 3, got " + str(test_signal.get_argument_count()))
@@ -152,7 +152,7 @@ func test_init_array_of_types_mixed() -> TestResult:
 
 
 func test_init_single_string_type() -> TestResult:
-    var test_signal = BetterSignal.new("int")
+    var test_signal = EasySignal.new("int")
 
     if test_signal.get_argument_count() != 1:
         return fail_test("Expected argument count to be 1, got " + str(test_signal.get_argument_count()))
@@ -167,7 +167,7 @@ func test_init_single_string_type() -> TestResult:
 
 
 func test_init_custom_class_name() -> TestResult:
-    var test_signal = BetterSignal.new("MySpecialType")
+    var test_signal = EasySignal.new("MySpecialType")
 
     if test_signal.get_argument_count() != 1:
         return fail_test("Expected argument count to be 1, got " + str(test_signal.get_argument_count()))
@@ -182,7 +182,7 @@ func test_init_custom_class_name() -> TestResult:
 
 
 func test_init_array_of_string_types() -> TestResult:
-    var test_signal = BetterSignal.new(["int", "float"])
+    var test_signal = EasySignal.new(["int", "float"])
 
     if test_signal.get_argument_count() != 2:
         return fail_test("Expected argument count to be 2, got " + str(test_signal.get_argument_count()))
@@ -197,7 +197,7 @@ func test_init_array_of_string_types() -> TestResult:
 
 
 func test_init_array_of_string_types_with_custom() -> TestResult:
-    var test_signal = BetterSignal.new(["String", "MySpecialType"])
+    var test_signal = EasySignal.new(["String", "MySpecialType"])
 
     if test_signal.get_argument_count() != 2:
         return fail_test("Expected argument count to be 2, got " + str(test_signal.get_argument_count()))
@@ -212,7 +212,7 @@ func test_init_array_of_string_types_with_custom() -> TestResult:
 
 
 func test_init_void_with_null() -> TestResult:
-    var test_signal = BetterSignal.new(null)
+    var test_signal = EasySignal.new(null)
 
     if test_signal.get_argument_count() != 0:
         return fail_test("Expected argument count to be 0, got " + str(test_signal.get_argument_count()))
@@ -227,7 +227,7 @@ func test_init_void_with_null() -> TestResult:
 
 
 func test_init_void_with_type_nil() -> TestResult:
-    var test_signal = BetterSignal.new(TYPE_NIL)
+    var test_signal = EasySignal.new(TYPE_NIL)
 
     if test_signal.get_argument_count() != 0:
         return fail_test("Expected argument count to be 0, got " + str(test_signal.get_argument_count()))
@@ -242,7 +242,7 @@ func test_init_void_with_type_nil() -> TestResult:
 
 
 func test_init_void_with_empty_array() -> TestResult:
-    var test_signal = BetterSignal.new([])
+    var test_signal = EasySignal.new([])
 
     if test_signal.get_argument_count() != 0:
         return fail_test("Expected argument count to be 0, got " + str(test_signal.get_argument_count()))
@@ -257,7 +257,7 @@ func test_init_void_with_empty_array() -> TestResult:
 
 
 func test_init_void_with_no_args() -> TestResult:
-    var test_signal = BetterSignal.new()
+    var test_signal = EasySignal.new()
 
     if test_signal.get_argument_count() != 0:
         return fail_test("Expected argument count to be 0, got " + str(test_signal.get_argument_count()))
@@ -272,7 +272,7 @@ func test_init_void_with_no_args() -> TestResult:
 
 
 func test_init_variant_with_string() -> TestResult:
-    var test_signal = BetterSignal.new("Variant")
+    var test_signal = EasySignal.new("Variant")
 
     if test_signal.get_argument_count() != 1:
         return fail_test("Expected argument count to be 1, got " + str(test_signal.get_argument_count()))
@@ -287,7 +287,7 @@ func test_init_variant_with_string() -> TestResult:
 
 
 func test_init_variant_with_array() -> TestResult:
-    var test_signal = BetterSignal.new(["Variant"])
+    var test_signal = EasySignal.new(["Variant"])
 
     if test_signal.get_argument_count() != 1:
         return fail_test("Expected argument count to be 1, got " + str(test_signal.get_argument_count()))
@@ -302,7 +302,7 @@ func test_init_variant_with_array() -> TestResult:
 
 
 func test_init_array_mixed_type_and_string() -> TestResult:
-    var test_signal = BetterSignal.new([TYPE_INT, "float", TYPE_STRING])
+    var test_signal = EasySignal.new([TYPE_INT, "float", TYPE_STRING])
 
     if test_signal.get_argument_count() != 3:
         return fail_test("Expected argument count to be 3, got " + str(test_signal.get_argument_count()))
@@ -318,7 +318,7 @@ func test_init_array_mixed_type_and_string() -> TestResult:
 
 func test_init_all_basic_types() -> TestResult:
     var test_signal = (
-        BetterSignal
+        EasySignal
         . new(
             [
                 TYPE_BOOL,
@@ -347,7 +347,7 @@ func test_init_all_basic_types() -> TestResult:
 
 
 func test_init_type_array() -> TestResult:
-    var test_signal = BetterSignal.new(TYPE_ARRAY)
+    var test_signal = EasySignal.new(TYPE_ARRAY)
 
     if test_signal.get_argument_count() != 1:
         return fail_test("Expected argument count to be 1, got " + str(test_signal.get_argument_count()))
@@ -362,7 +362,7 @@ func test_init_type_array() -> TestResult:
 
 
 func test_init_type_dictionary() -> TestResult:
-    var test_signal = BetterSignal.new(TYPE_DICTIONARY)
+    var test_signal = EasySignal.new(TYPE_DICTIONARY)
 
     if test_signal.get_argument_count() != 1:
         return fail_test("Expected argument count to be 1, got " + str(test_signal.get_argument_count()))
@@ -377,7 +377,7 @@ func test_init_type_dictionary() -> TestResult:
 
 
 func test_init_type_object() -> TestResult:
-    var test_signal = BetterSignal.new(TYPE_OBJECT)
+    var test_signal = EasySignal.new(TYPE_OBJECT)
 
     if test_signal.get_argument_count() != 1:
         return fail_test("Expected argument count to be 1, got " + str(test_signal.get_argument_count()))
@@ -397,7 +397,7 @@ func test_init_type_object() -> TestResult:
 
 
 func test_init_invalid_type_bool_defaults_to_untyped() -> TestResult:
-    var test_signal = BetterSignal.new(true)
+    var test_signal = EasySignal.new(true)
 
     if test_signal.get_argument_count() != 1:
         return fail_test("Expected argument count to be 1 (variant defaults to 1), got " + str(test_signal.get_argument_count()))
@@ -413,7 +413,7 @@ func test_init_invalid_type_bool_defaults_to_untyped() -> TestResult:
 
 func test_init_invalid_type_object_defaults_to_untyped() -> TestResult:
     var test_object = Object.new()
-    var test_signal = BetterSignal.new(test_object)
+    var test_signal = EasySignal.new(test_object)
     test_object.free()
 
     if test_signal.get_argument_count() != 1:
@@ -429,7 +429,7 @@ func test_init_invalid_type_object_defaults_to_untyped() -> TestResult:
 
 
 func test_init_invalid_array_with_invalid_element_defaults_to_untyped() -> TestResult:
-    var test_signal = BetterSignal.new([TYPE_INT, true, TYPE_FLOAT])  # Should default to untyped
+    var test_signal = EasySignal.new([TYPE_INT, true, TYPE_FLOAT])  # Should default to untyped
 
     if test_signal.get_argument_count() != 1:
         return fail_test("Expected argument count to be 1 (variant defaults to 1), got " + str(test_signal.get_argument_count()))
@@ -444,7 +444,7 @@ func test_init_invalid_array_with_invalid_element_defaults_to_untyped() -> TestR
 
 
 func test_init_invalid_type_constant_out_of_range_defaults_to_untyped() -> TestResult:
-    var test_signal = BetterSignal.new(-1)  # Should default to untyped
+    var test_signal = EasySignal.new(-1)  # Should default to untyped
 
     if test_signal.get_argument_count() != 1:
         return fail_test("Expected argument count to be 1 (variant defaults to 1), got " + str(test_signal.get_argument_count()))
@@ -459,7 +459,7 @@ func test_init_invalid_type_constant_out_of_range_defaults_to_untyped() -> TestR
 
 
 func test_init_array_with_null_defaults_to_untyped() -> TestResult:
-    var test_signal = BetterSignal.new(["String", null, "int"])  # Should default to untyped
+    var test_signal = EasySignal.new(["String", null, "int"])  # Should default to untyped
     if test_signal.get_argument_count() != 1:
         return fail_test("Expected argument count to be 1, got " + str(test_signal.get_argument_count()))
     if test_signal.get_argument_types() != ["Variant"]:
@@ -478,7 +478,7 @@ func test_init_array_with_null_defaults_to_untyped() -> TestResult:
 
 
 func test_add_handler() -> TestResult:
-    var test_signal = BetterSignal.new(TYPE_INT)
+    var test_signal = EasySignal.new(TYPE_INT)
     var callback: Callable = func(_payload): pass
 
     var listener = test_signal.add(callback)
@@ -492,7 +492,7 @@ func test_add_handler() -> TestResult:
 
 
 func test_add_same_handler_twice_returns_same_listener() -> TestResult:
-    var test_signal = BetterSignal.new(TYPE_INT)
+    var test_signal = EasySignal.new(TYPE_INT)
     var callback := func(_payload): pass
 
     var listener1 = test_signal.add(callback)
@@ -505,7 +505,7 @@ func test_add_same_handler_twice_returns_same_listener() -> TestResult:
 
 
 func test_remove_handler_should_dispose_subscriber() -> TestResult:
-    var test_signal = BetterSignal.new_void()
+    var test_signal = EasySignal.new_void()
     var callback := func(): pass
 
     var listener = test_signal.add(callback)
@@ -518,7 +518,7 @@ func test_remove_handler_should_dispose_subscriber() -> TestResult:
 
 
 func test_remove_handler() -> TestResult:
-    var test_signal = BetterSignal.new(TYPE_INT)
+    var test_signal = EasySignal.new(TYPE_INT)
     var callback := func(_payload): pass
 
     test_signal.add(callback)
@@ -533,7 +533,7 @@ func test_remove_handler() -> TestResult:
 
 
 func test_remove_nonexistent_handler() -> TestResult:
-    var test_signal = BetterSignal.new(TYPE_INT)
+    var test_signal = EasySignal.new(TYPE_INT)
     var callback := func(_payload): pass
 
     var removed = test_signal.remove(callback)
@@ -545,7 +545,7 @@ func test_remove_nonexistent_handler() -> TestResult:
 
 
 func test_remove_all_handlers() -> TestResult:
-    var test_signal = BetterSignal.new(TYPE_INT)
+    var test_signal = EasySignal.new(TYPE_INT)
     var callback1 := func(_payload): pass
     var callback2 := func(_payload): pass
 
@@ -560,7 +560,7 @@ func test_remove_all_handlers() -> TestResult:
 
 
 func test_emit_void_signal() -> TestResult:
-    var test_signal = BetterSignal.new_void()
+    var test_signal = EasySignal.new_void()
     var call_count := [0]
     var callback := func(): call_count[0] += 1
 
@@ -574,7 +574,7 @@ func test_emit_void_signal() -> TestResult:
 
 
 func test_emit_void_signal_with_payload_goes_through() -> TestResult:
-    var test_signal = BetterSignal.new_void()
+    var test_signal = EasySignal.new_void()
     var call_count := [0]
     var callback := func(): call_count[0] += 1
 
@@ -585,7 +585,7 @@ func test_emit_void_signal_with_payload_goes_through() -> TestResult:
 
 
 func test_emit_strict_void_signal_with_payload_does_not_go_through() -> TestResult:
-    var test_signal = BetterSignal.new_void_strict()
+    var test_signal = EasySignal.new_void_strict()
     var call_count := [0]
     var callback := func(): call_count[0] += 1
 
@@ -599,7 +599,7 @@ func test_emit_strict_void_signal_with_payload_does_not_go_through() -> TestResu
 
 
 func test_emit_typed_signal_single_payload() -> TestResult:
-    var test_signal = BetterSignal.new(TYPE_INT)
+    var test_signal = EasySignal.new(TYPE_INT)
     var received_payload := [null]
     var callback := func(payload): received_payload[0] = payload
 
@@ -613,7 +613,7 @@ func test_emit_typed_signal_single_payload() -> TestResult:
 
 
 func test_emit_typed_signal_with_invalid_payload() -> TestResult:
-    var test_signal = BetterSignal.new(TYPE_INT)
+    var test_signal = EasySignal.new(TYPE_INT)
     var call_count := [0]
     var _callback := func(_payload): call_count[0] += 1
 
@@ -627,7 +627,7 @@ func test_emit_typed_signal_with_invalid_payload() -> TestResult:
 
 
 func test_emit_variant_signal_with_different_types() -> TestResult:
-    var test_signal = BetterSignal.new_untyped()
+    var test_signal = EasySignal.new_untyped()
     var received_payloads: Array[Variant] = []
     var callback: Callable = func(payload: Variant): received_payloads.append(payload)
 
@@ -649,7 +649,7 @@ func test_emit_variant_signal_with_different_types() -> TestResult:
 
 
 func test_emit_calls_multiple_handlers() -> TestResult:
-    var test_signal = BetterSignal.new(TYPE_INT)
+    var test_signal = EasySignal.new(TYPE_INT)
     var call_count1 := [0]
     var call_count2 := [0]
     var callback1 := func(_payload): call_count1[0] += 1
@@ -668,7 +668,7 @@ func test_emit_calls_multiple_handlers() -> TestResult:
 
 
 func test_emit_after_handler_removed() -> TestResult:
-    var test_signal = BetterSignal.new(TYPE_INT)
+    var test_signal = EasySignal.new(TYPE_INT)
     var call_count := [0]
     var callback := func(_payload): call_count[0] += 1
 
@@ -684,7 +684,7 @@ func test_emit_after_handler_removed() -> TestResult:
 
 
 func test_emit_with_priority() -> TestResult:
-    var test_signal = BetterSignal.new()
+    var test_signal = EasySignal.new()
     var results: Array[int] = []
     var callback1: Callable = func(): results.append(1)
     var callback2: Callable = func(): results.append(2)
@@ -702,7 +702,7 @@ func test_emit_with_priority() -> TestResult:
 
 
 func test_emit_with_priority_post_emit() -> TestResult:
-    var test_signal = BetterSignal.new()
+    var test_signal = EasySignal.new()
     var results: Array[int] = []
     var callback1: Callable = func(): results.append(1)
     var callback2: Callable = func(): results.append(2)
@@ -740,7 +740,7 @@ func test_emit_with_priority_post_emit() -> TestResult:
 
 
 func test_priority_resets_after_remove() -> TestResult:
-    var test_signal = BetterSignal.new()
+    var test_signal = EasySignal.new()
     var results: Array[int] = []
     var callback1: Callable = func(): results.append(1)
     var callback2: Callable = func(): results.append(2)
@@ -780,7 +780,7 @@ func test_priority_resets_after_remove() -> TestResult:
 
 
 func test_delay_prevents_immediate_execution() -> TestResult:
-    var test_signal = BetterSignal.new_void()
+    var test_signal = EasySignal.new_void()
     var call_count := [0]
     var _callback := func(): call_count[0] += 1
 
@@ -799,7 +799,7 @@ func test_delay_prevents_immediate_execution() -> TestResult:
 
 
 func test_frame_delay_executes_at_the_right_frame() -> TestResult:
-    var test_signal = BetterSignal.new_void()
+    var test_signal = EasySignal.new_void()
     var call_count := [0]
     var _callback := func(): call_count[0] += 1
 
@@ -826,7 +826,7 @@ func test_frame_delay_executes_at_the_right_frame() -> TestResult:
 
 
 func test_physics_frame_delay_prevents_immediate_execution() -> TestResult:
-    var test_signal = BetterSignal.new_void()
+    var test_signal = EasySignal.new_void()
     var call_count := [0]
     var _callback := func(): call_count[0] += 1
 
@@ -846,7 +846,7 @@ func test_physics_frame_delay_prevents_immediate_execution() -> TestResult:
 
 
 func test_ms_delay_prevents_immediate_execution() -> TestResult:
-    var test_signal = BetterSignal.new_void()
+    var test_signal = EasySignal.new_void()
     var call_count := [0]
     var _callback := func(): call_count[0] += 1
 
@@ -864,7 +864,7 @@ func test_ms_delay_prevents_immediate_execution() -> TestResult:
 
 
 func test_zero_delay_executes_immediately() -> TestResult:
-    var test_signal = BetterSignal.new_void()
+    var test_signal = EasySignal.new_void()
     var call_count := [0]
     var _callback := func(): call_count[0] += 1
 
@@ -879,7 +879,7 @@ func test_zero_delay_executes_immediately() -> TestResult:
 
 
 func test_delay_with_payload() -> TestResult:
-    var test_signal = BetterSignal.new(TYPE_INT)
+    var test_signal = EasySignal.new(TYPE_INT)
     var received_value := [null]
     var _callback := func(value): received_value[0] = value
 
@@ -903,7 +903,7 @@ func test_delay_with_payload() -> TestResult:
 
 
 func test_delay_with_once() -> TestResult:
-    var test_signal = BetterSignal.new_void()
+    var test_signal = EasySignal.new_void()
     var call_count := [0]
     var _callback := func(): call_count[0] += 1
 
@@ -932,7 +932,7 @@ func test_delay_with_once() -> TestResult:
 
 
 func test_delay_with_limited_to() -> TestResult:
-    var test_signal = BetterSignal.new_void()
+    var test_signal = EasySignal.new_void()
     var call_count := [0]
     var _callback := func(): call_count[0] += 1
 
@@ -966,7 +966,7 @@ func test_delay_with_limited_to() -> TestResult:
 
 
 func test_multiple_subscribers_with_different_delays() -> TestResult:
-    var test_signal = BetterSignal.new_void()
+    var test_signal = EasySignal.new_void()
     var call_order: Array[int] = []
     var _callback1 := func(): call_order.append(1)
     var _callback2 := func(): call_order.append(2)
@@ -999,7 +999,7 @@ func test_multiple_subscribers_with_different_delays() -> TestResult:
 
 
 func test_delay_with_priority() -> TestResult:
-    var test_signal = BetterSignal.new_void()
+    var test_signal = EasySignal.new_void()
     var call_order: Array[int] = []
     var _callback1 := func(): call_order.append(1)
     var _callback2 := func(): call_order.append(2)
@@ -1032,7 +1032,7 @@ func test_delay_with_priority() -> TestResult:
 
 
 func test_subscriber_weakref_to_signal() -> TestResult:
-    var test_signal = BetterSignal.new_void()
+    var test_signal = EasySignal.new_void()
     var _callback := func(): pass
     var subscriber = test_signal.add(_callback)
 
@@ -1057,7 +1057,7 @@ func test_subscriber_weakref_to_signal() -> TestResult:
 
 
 func test_multiple_emissions_with_delay() -> TestResult:
-    var test_signal = BetterSignal.new(TYPE_INT)
+    var test_signal = EasySignal.new(TYPE_INT)
     var received_values: Array[int] = []
     var _callback := func(value: int): received_values.append(value)
 
@@ -1080,7 +1080,7 @@ func test_multiple_emissions_with_delay() -> TestResult:
 
 
 func test_delay_preserves_emission_order() -> TestResult:
-    var test_signal = BetterSignal.new(TYPE_STRING)
+    var test_signal = EasySignal.new(TYPE_STRING)
     var received_values: Array[String] = []
     var _callback := func(value: String): received_values.append(value)
 
@@ -1103,7 +1103,7 @@ func test_delay_preserves_emission_order() -> TestResult:
 
 
 func test_removed_delayed_subcsriber_should_not_be_called() -> TestResult:
-    var test_signal = BetterSignal.new_void()
+    var test_signal = EasySignal.new_void()
     var call_count := [0]
     var _callback := func(): call_count[0] += 1
 
@@ -1125,7 +1125,7 @@ func test_removed_delayed_subcsriber_should_not_be_called() -> TestResult:
 
 
 func test_delay_ms_executes_after_time() -> TestResult:
-    var test_signal = BetterSignal.new_void()
+    var test_signal = EasySignal.new_void()
     var call_count := [0]
     var _callback := func(): call_count[0] += 1
 
@@ -1147,7 +1147,7 @@ func test_delay_ms_executes_after_time() -> TestResult:
 
 
 func test_subscriber_getters() -> TestResult:
-    var test_signal = BetterSignal.new_void()
+    var test_signal = EasySignal.new_void()
     var _callback := func(): pass
 
     var subscriber = test_signal.add(_callback).with_delay_frames(5).with_priority(10).limited_to(3)
@@ -1174,25 +1174,25 @@ func test_subscriber_getters() -> TestResult:
 
 
 func test_signal_enabled_by_default() -> TestResult:
-    var test_signal = BetterSignal.new_void()
+    var test_signal = EasySignal.new_void()
     return assert_true(test_signal.is_enabled(), "Expected signal to be enabled by default after creation")
 
 
 func test_signal_disable_changes_enabled_state() -> TestResult:
-    var test_signal = BetterSignal.new_void()
+    var test_signal = EasySignal.new_void()
     test_signal.disable()
     return assert_false(test_signal.is_enabled(), "Expected signal to be disabled after disable()")
 
 
 func test_signal_enable_changes_enabled_state() -> TestResult:
-    var test_signal = BetterSignal.new_void()
+    var test_signal = EasySignal.new_void()
     test_signal.disable()
     test_signal.enable()
     return assert_true(test_signal.is_enabled(), "Expected signal to be enabled after enable()")
 
 
 func test_signal_disabled_does_not_emit() -> TestResult:
-    var test_signal = BetterSignal.new_void()
+    var test_signal = EasySignal.new_void()
     var call_count := [0]
     var _callback := func(): call_count[0] += 1
     test_signal.add(_callback)
@@ -1201,7 +1201,7 @@ func test_signal_disabled_does_not_emit() -> TestResult:
 
 
 func test_signal_re_enabled_does_emit() -> TestResult:
-    var test_signal = BetterSignal.new_void()
+    var test_signal = EasySignal.new_void()
     var call_count := [0]
     var _callback := func(): call_count[0] += 1
     test_signal.add(_callback)
@@ -1212,7 +1212,7 @@ func test_signal_re_enabled_does_emit() -> TestResult:
 
 
 func test_signal_disabled_with_delay_does_not_emit() -> TestResult:
-    var test_signal = BetterSignal.new_void()
+    var test_signal = EasySignal.new_void()
     var call_count := [0]
     var _callback := func(): call_count[0] += 1
     test_signal.add(_callback)
@@ -1222,7 +1222,7 @@ func test_signal_disabled_with_delay_does_not_emit() -> TestResult:
 
 
 func test_signal_disabled_signal_does_not_queue_delayed_emissions() -> TestResult:
-    var test_signal = BetterSignal.new_void()
+    var test_signal = EasySignal.new_void()
     var call_count := [0]
     var _callback := func(): call_count[0] += 1
     test_signal.add(_callback).with_delay_frames(2)
@@ -1234,7 +1234,7 @@ func test_signal_disabled_signal_does_not_queue_delayed_emissions() -> TestResul
 
 
 func test_disabling_signal_does_not_stop_queued_delayed_emissions() -> TestResult:
-    var test_signal = BetterSignal.new_void()
+    var test_signal = EasySignal.new_void()
     var call_count := [0]
     var _callback := func(): call_count[0] += 1
     test_signal.add(_callback).with_delay_frames(2)
@@ -1251,13 +1251,13 @@ func test_disabling_signal_does_not_stop_queued_delayed_emissions() -> TestResul
 
 
 func test_signal_link_to_godot_signal_adds_link_to_internal_list() -> TestResult:
-    var test_signal = BetterSignal.new_void()
+    var test_signal = EasySignal.new_void()
     test_signal.link_to_godot_signal(Engine.get_main_loop().process_frame)
     return assert_equal(1, test_signal._godot_builtin_signals_links.size())
 
 
 func test_adding_same_callback_multiple_times_does_not_duplicate() -> TestResult:
-    var test_signal = BetterSignal.new_void()
+    var test_signal = EasySignal.new_void()
     var call_count := [0]
     var callback := func(): call_count[0] += 1
 
@@ -1271,7 +1271,7 @@ func test_adding_same_callback_multiple_times_does_not_duplicate() -> TestResult
 
 
 func test_adding_same_callback_multiple_times_only_calls_once() -> TestResult:
-    var test_signal = BetterSignal.new_void()
+    var test_signal = EasySignal.new_void()
     var call_count := [0]
     var callback := func(): call_count[0] += 1
 
@@ -1286,13 +1286,13 @@ func test_adding_same_callback_multiple_times_only_calls_once() -> TestResult:
 
 
 func test_signal_link_to_godot_signal_by_name_adds_link_to_internal_list() -> TestResult:
-    var test_signal = BetterSignal.new_void()
+    var test_signal = EasySignal.new_void()
     test_signal.link_to_godot_signal_by_name(Engine.get_main_loop(), "process_frame")
     return assert_equal(1, test_signal._godot_builtin_signals_links.size())
 
 
 func test_signal_link_to_godot_signal_emits_with_it() -> TestResult:
-    var test_signal = BetterSignal.new_void()
+    var test_signal = EasySignal.new_void()
     var call_count := [0]
     test_signal.add(func(): call_count[0] += 1)
     test_signal.link_to_godot_signal(Engine.get_main_loop().process_frame)
@@ -1301,7 +1301,7 @@ func test_signal_link_to_godot_signal_emits_with_it() -> TestResult:
 
 
 func test_signal_link_to_godot_signal_by_name_emits_with_it() -> TestResult:
-    var test_signal = BetterSignal.new_void()
+    var test_signal = EasySignal.new_void()
     var call_count := [0]
     test_signal.add(func(): call_count[0] += 1)
     test_signal.link_to_godot_signal_by_name(Engine.get_main_loop(), "process_frame")
@@ -1310,7 +1310,7 @@ func test_signal_link_to_godot_signal_by_name_emits_with_it() -> TestResult:
 
 
 func test_signal_add_by_ref_remove_by_name_removes_link() -> TestResult:
-    var test_signal = BetterSignal.new_void()
+    var test_signal = EasySignal.new_void()
     var godot_signal = Engine.get_main_loop().process_frame
     test_signal.link_to_godot_signal(godot_signal)
     test_signal.disconnect_from_godot_signal_by_name(Engine.get_main_loop(), "process_frame")
@@ -1318,7 +1318,7 @@ func test_signal_add_by_ref_remove_by_name_removes_link() -> TestResult:
 
 
 func test_signal_add_by_name_remove_by_ref_removes_link() -> TestResult:
-    var test_signal = BetterSignal.new_void()
+    var test_signal = EasySignal.new_void()
     test_signal.link_to_godot_signal_by_name(Engine.get_main_loop(), "process_frame")
     var godot_signal = Engine.get_main_loop().process_frame
     test_signal.disconnect_from_godot_signal(godot_signal)
@@ -1326,7 +1326,7 @@ func test_signal_add_by_name_remove_by_ref_removes_link() -> TestResult:
 
 
 func test_signal_disconnect_from_godot_signal_removes_link_from_internal_list() -> TestResult:
-    var test_signal = BetterSignal.new_void()
+    var test_signal = EasySignal.new_void()
     var godot_signal = Engine.get_main_loop().process_frame
     test_signal.link_to_godot_signal(godot_signal)
     test_signal.disconnect_from_godot_signal(godot_signal)
@@ -1334,14 +1334,14 @@ func test_signal_disconnect_from_godot_signal_removes_link_from_internal_list() 
 
 
 func test_signal_disconnect_from_godot_signal_by_name_removes_link_from_internal_list() -> TestResult:
-    var test_signal = BetterSignal.new_void()
+    var test_signal = EasySignal.new_void()
     test_signal.link_to_godot_signal_by_name(Engine.get_main_loop(), "process_frame")
     test_signal.disconnect_from_godot_signal_by_name(Engine.get_main_loop(), "process_frame")
     return assert_equal(0, test_signal._godot_builtin_signals_links.size())
 
 
 func test_signal_disconnect_from_godot_signal_stops_emitting_with_it() -> TestResult:
-    var test_signal = BetterSignal.new_void()
+    var test_signal = EasySignal.new_void()
     var call_count := [0]
     test_signal.add(func(): call_count[0] += 1)
     var godot_signal = Engine.get_main_loop().process_frame
@@ -1352,7 +1352,7 @@ func test_signal_disconnect_from_godot_signal_stops_emitting_with_it() -> TestRe
 
 
 func test_signal_disconnect_from_godot_signal_by_name_stops_emitting_with_it() -> TestResult:
-    var test_signal = BetterSignal.new_void()
+    var test_signal = EasySignal.new_void()
     var call_count := [0]
     test_signal.add(func(): call_count[0] += 1)
     test_signal.link_to_godot_signal_by_name(Engine.get_main_loop(), "process_frame")
@@ -1362,14 +1362,14 @@ func test_signal_disconnect_from_godot_signal_by_name_stops_emitting_with_it() -
 
 
 func test_signal_disconnect_from_all_godot_signals_removes_all_links_from_internal_list() -> TestResult:
-    var test_signal = BetterSignal.new_void()
+    var test_signal = EasySignal.new_void()
     test_signal.link_to_godot_signal(Engine.get_main_loop().process_frame)
     test_signal.disconnect_from_all_godot_signals()
     return assert_equal(0, test_signal._godot_builtin_signals_links.size())
 
 
 func test_signal_disconnect_from_all_godot_signals_stops_emitting_linked_by_ref() -> TestResult:
-    var test_signal = BetterSignal.new_void()
+    var test_signal = EasySignal.new_void()
     var call_count := [0]
     test_signal.add(func(): call_count[0] += 1)
     var godot_signal = Engine.get_main_loop().process_frame
@@ -1380,7 +1380,7 @@ func test_signal_disconnect_from_all_godot_signals_stops_emitting_linked_by_ref(
 
 
 func test_signal_disconnect_from_all_godot_signals_stops_emitting_linked_by_name() -> TestResult:
-    var test_signal = BetterSignal.new_void()
+    var test_signal = EasySignal.new_void()
     var call_count := [0]
     test_signal.add(func(): call_count[0] += 1)
     test_signal.link_to_godot_signal_by_name(Engine.get_main_loop(), "process_frame")
@@ -1390,7 +1390,7 @@ func test_signal_disconnect_from_all_godot_signals_stops_emitting_linked_by_name
 
 
 func test_signal_link_to_godot_signal_integration_with_button_node() -> TestResult:
-    var test_signal = BetterSignal.new_void()
+    var test_signal = EasySignal.new_void()
     var call_count := [0]
     var button_node = Button.new()
     Engine.get_main_loop().root.add_child(button_node)
@@ -1409,7 +1409,7 @@ func test_signal_link_to_godot_signal_integration_with_button_node() -> TestResu
 
 
 func test_find_returns_subscriber_for_existing_callback() -> TestResult:
-    var test_signal = BetterSignal.new_void()
+    var test_signal = EasySignal.new_void()
     var callback := func(): pass
 
     var subscriber = test_signal.add(callback)
@@ -1422,7 +1422,7 @@ func test_find_returns_subscriber_for_existing_callback() -> TestResult:
 
 
 func test_find_returns_null_for_nonexistent_callback() -> TestResult:
-    var test_signal = BetterSignal.new_void()
+    var test_signal = EasySignal.new_void()
     var callback := func(): pass
 
     var found = test_signal.find(callback)
@@ -1434,7 +1434,7 @@ func test_find_returns_null_for_nonexistent_callback() -> TestResult:
 
 
 func test_find_distinguishes_between_different_callbacks() -> TestResult:
-    var test_signal = BetterSignal.new_void()
+    var test_signal = EasySignal.new_void()
     var callback1 := func(): pass
     var callback2 := func(): pass
 
@@ -1450,7 +1450,7 @@ func test_find_distinguishes_between_different_callbacks() -> TestResult:
 
 
 func test_validate_payload_accepts_valid_payload() -> TestResult:
-    var test_signal = BetterSignal.new([TYPE_INT, TYPE_STRING])
+    var test_signal = EasySignal.new([TYPE_INT, TYPE_STRING])
     var payload = [42, "hello"]
 
     var result = test_signal.validate_payload(payload)
@@ -1462,7 +1462,7 @@ func test_validate_payload_accepts_valid_payload() -> TestResult:
 
 
 func test_validate_payload_rejects_wrong_argument_count() -> TestResult:
-    var test_signal = BetterSignal.new([TYPE_INT, TYPE_STRING])
+    var test_signal = EasySignal.new([TYPE_INT, TYPE_STRING])
     var payload = [42]  # Missing second argument
 
     var result = test_signal.validate_payload(payload)
@@ -1476,7 +1476,7 @@ func test_validate_payload_rejects_wrong_argument_count() -> TestResult:
 
 
 func test_validate_payload_rejects_wrong_type() -> TestResult:
-    var test_signal = BetterSignal.new([TYPE_INT, TYPE_STRING])
+    var test_signal = EasySignal.new([TYPE_INT, TYPE_STRING])
     var payload = ["hello", 42]  # Types swapped
 
     var result = test_signal.validate_payload(payload)
@@ -1490,7 +1490,7 @@ func test_validate_payload_rejects_wrong_type() -> TestResult:
 
 
 func test_validate_payload_accepts_variant_types() -> TestResult:
-    var test_signal = BetterSignal.new_untyped()
+    var test_signal = EasySignal.new_untyped()
     var payload = [42]
 
     var result = test_signal.validate_payload(payload)
@@ -1507,7 +1507,7 @@ func test_validate_payload_accepts_variant_types() -> TestResult:
 
 
 func test_add_null_callback_rejected() -> TestResult:
-    var test_signal = BetterSignal.new_void()
+    var test_signal = EasySignal.new_void()
     var callback: Callable = Callable()  # Null callable
 
     var subscriber = test_signal.add(callback)
@@ -1519,7 +1519,7 @@ func test_add_null_callback_rejected() -> TestResult:
 
 
 func test_add_invalid_callback_rejected() -> TestResult:
-    var test_signal = BetterSignal.new(TYPE_INT)
+    var test_signal = EasySignal.new(TYPE_INT)
     var obj = RefCounted.new()
     var callback = Callable(obj, "nonexistent_method")
 
@@ -1533,7 +1533,7 @@ func test_add_invalid_callback_rejected() -> TestResult:
 
 
 func test_add_callback_with_wrong_argument_count() -> TestResult:
-    var test_signal = BetterSignal.new_typed("int", "float")
+    var test_signal = EasySignal.new_typed("int", "float")
     # Lambda with 1 argument when signal expects 2
     var callback := func(_arg1): pass
 
@@ -1549,7 +1549,7 @@ func test_add_callback_with_wrong_argument_count() -> TestResult:
 
 
 func test_link_to_godot_signal_with_null_source_rejected() -> TestResult:
-    var test_signal = BetterSignal.new_void()
+    var test_signal = EasySignal.new_void()
 
     # Should handle null gracefully
     test_signal.link_to_godot_signal_by_name(null, "some_signal")
@@ -1559,7 +1559,7 @@ func test_link_to_godot_signal_with_null_source_rejected() -> TestResult:
 
 
 func test_link_to_godot_signal_with_empty_signal_name_rejected() -> TestResult:
-    var test_signal = BetterSignal.new_void()
+    var test_signal = EasySignal.new_void()
 
     test_signal.link_to_godot_signal_by_name(Engine.get_main_loop(), "")
 
@@ -1568,7 +1568,7 @@ func test_link_to_godot_signal_with_empty_signal_name_rejected() -> TestResult:
 
 
 func test_link_to_same_godot_signal_twice_does_not_duplicate() -> TestResult:
-    var test_signal = BetterSignal.new_void()
+    var test_signal = EasySignal.new_void()
     var godot_signal = Engine.get_main_loop().process_frame
 
     test_signal.link_to_godot_signal(godot_signal)
@@ -1584,7 +1584,7 @@ func test_link_to_same_godot_signal_twice_does_not_duplicate() -> TestResult:
 
 
 func test_disconnect_from_godot_signal_that_was_never_connected() -> TestResult:
-    var test_signal = BetterSignal.new_void()
+    var test_signal = EasySignal.new_void()
     var godot_signal = Engine.get_main_loop().process_frame
 
     var result = test_signal.disconnect_from_godot_signal(godot_signal)
@@ -1596,12 +1596,12 @@ func test_disconnect_from_godot_signal_that_was_never_connected() -> TestResult:
 
 
 # ===============================
-# BetterSignalSubscriber Getter Tests
+# EasySignalSubscriber Getter Tests
 # ===============================
 
 
 func test_subscriber_get_target_object_returns_correct_object() -> TestResult:
-    var test_signal = BetterSignal.new_typed("bool")
+    var test_signal = EasySignal.new_typed("bool")
     var test_obj = Node.new()
     var callback = Callable(test_obj, "set_process")
 
@@ -1611,7 +1611,7 @@ func test_subscriber_get_target_object_returns_correct_object() -> TestResult:
 
 
 func test_subscriber_get_target_object_for_lambda_has_correct_metadata() -> TestResult:
-    var test_signal = BetterSignal.new_void()
+    var test_signal = EasySignal.new_void()
     var subscriber = test_signal.add(func(): pass)
 
     # Ensure target object is non-null and of type Object and that the method name is "<anonymous lambda>"
@@ -1629,7 +1629,7 @@ func test_subscriber_get_target_object_for_lambda_has_correct_metadata() -> Test
 
 
 func test_calling_once_multiple_times_last_wins() -> TestResult:
-    var test_signal = BetterSignal.new_void()
+    var test_signal = EasySignal.new_void()
     var call_count := [0]
     var callback := func(): call_count[0] += 1
 
@@ -1647,7 +1647,7 @@ func test_calling_once_multiple_times_last_wins() -> TestResult:
 
 
 func test_calling_limited_to_multiple_times_last_wins() -> TestResult:
-    var test_signal = BetterSignal.new_void()
+    var test_signal = EasySignal.new_void()
     var call_count := [0]
     var callback := func(): call_count[0] += 1
 
@@ -1665,7 +1665,7 @@ func test_calling_limited_to_multiple_times_last_wins() -> TestResult:
 
 
 func test_changing_delay_type_multiple_times_last_wins() -> TestResult:
-    var test_signal = BetterSignal.new_void()
+    var test_signal = EasySignal.new_void()
     var callback := func(): pass
 
     var subscriber = test_signal.add(callback)
@@ -1682,7 +1682,7 @@ func test_changing_delay_type_multiple_times_last_wins() -> TestResult:
 
 
 func test_negative_delay_frames() -> TestResult:
-    var test_signal = BetterSignal.new_void()
+    var test_signal = EasySignal.new_void()
     var call_count := [0]
     var callback := func(): call_count[0] += 1
 
@@ -1705,7 +1705,7 @@ func test_negative_delay_frames() -> TestResult:
 
 
 func test_adding_subscriber_during_emission() -> TestResult:
-    var test_signal = BetterSignal.new_void()
+    var test_signal = EasySignal.new_void()
     var call_count := [0]
     var second_callback := func():
         print("Second callback will take count from " + str(call_count[0]) + " to " + str(call_count[0] + 100))
@@ -1732,7 +1732,7 @@ func test_adding_subscriber_during_emission() -> TestResult:
 
 
 func test_removing_subscriber_during_emission() -> TestResult:
-    var test_signal = BetterSignal.new_void()
+    var test_signal = EasySignal.new_void()
     var call_count := [0]
     var second_callback := func(): call_count[0] += 100
 
@@ -1754,7 +1754,7 @@ func test_removing_subscriber_during_emission() -> TestResult:
 
 
 func test_recursive_emission() -> TestResult:
-    var test_signal = BetterSignal.new(TYPE_INT)
+    var test_signal = EasySignal.new(TYPE_INT)
     var call_count := [0]
 
     var recursive_callback := func(depth: int):
@@ -1777,7 +1777,7 @@ func test_recursive_emission() -> TestResult:
 
 
 func test_target_object_freed_during_delay() -> TestResult:
-    var test_signal = BetterSignal.new_typed("bool")
+    var test_signal = EasySignal.new_typed("bool")
     var call_count := [0]
     var obj = Node.new()
 
@@ -1800,7 +1800,7 @@ func test_target_object_freed_during_delay() -> TestResult:
 
 
 func test_dispose_prevents_delayed_invocation() -> TestResult:
-    var test_signal = BetterSignal.new_void()
+    var test_signal = EasySignal.new_void()
     var call_count := [0]
     var callback := func(): call_count[0] += 1
 
@@ -1822,7 +1822,7 @@ func test_dispose_prevents_delayed_invocation() -> TestResult:
 
 
 func test_is_orphaned_detects_null_callable() -> TestResult:
-    var test_signal = BetterSignal.new_void()
+    var test_signal = EasySignal.new_void()
     var callback := func(): pass
 
     var subscriber = test_signal.add(callback)
@@ -1835,7 +1835,7 @@ func test_is_orphaned_detects_null_callable() -> TestResult:
 
 
 func test_purge_orphaned_subscribers_removes_orphaned_subscribers() -> TestResult:
-    var test_signal = BetterSignal.new_void()
+    var test_signal = EasySignal.new_void()
     var call_count := [0]
     var test_node = Node.new()
     var callback := func(): call_count[0] += 1
@@ -1874,7 +1874,7 @@ func test_purge_orphaned_subscribers_removes_orphaned_subscribers() -> TestResul
 
 
 func test_priority_ties_maintain_add_order() -> TestResult:
-    var test_signal = BetterSignal.new_void()
+    var test_signal = EasySignal.new_void()
     var results: Array[int] = []
 
     var callback1 := func(): results.append(1)
@@ -1896,7 +1896,7 @@ func test_priority_ties_maintain_add_order() -> TestResult:
 
 
 func test_extreme_priority_values() -> TestResult:
-    var test_signal = BetterSignal.new_void()
+    var test_signal = EasySignal.new_void()
     var results: Array[int] = []
 
     var callback1 := func(): results.append(1)
@@ -1922,7 +1922,7 @@ func test_extreme_priority_values() -> TestResult:
 
 
 func test_complex_chaining_all_fluent_methods() -> TestResult:
-    var test_signal = BetterSignal.new(TYPE_INT)
+    var test_signal = EasySignal.new(TYPE_INT)
     var received_values: Array[int] = []
     var callback := func(val: int): received_values.append(val)
 
@@ -1943,7 +1943,7 @@ func test_complex_chaining_all_fluent_methods() -> TestResult:
 
 
 func test_emit_typed_signal_with_multiple_argument_types() -> TestResult:
-    var test_signal = BetterSignal.new([TYPE_INT, TYPE_STRING, TYPE_BOOL, TYPE_VECTOR2])
+    var test_signal = EasySignal.new([TYPE_INT, TYPE_STRING, TYPE_BOOL, TYPE_VECTOR2])
     var received_args: Array = [null, null, null, null]
     var callback := func(a: int, b: String, c: bool, d: Vector2):
         received_args[0] = a

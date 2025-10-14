@@ -1,12 +1,12 @@
 extends RefCounted
-class_name BetterSignal
+class_name EasySignal
 
 # ===============================
 # Factory methods
 # ===============================
 
 
-## Creates a new BetterSignal with a payload signature defined by an array of type names or Variant.Type values.
+## Creates a new EasySignal with a payload signature defined by an array of type names or Variant.Type values.
 ##
 ## This only provides additional checks and debugging info at emit() and add() time
 ## You can get a small performance gain by using an untyped signal instead to skip the validation logic
@@ -14,36 +14,36 @@ class_name BetterSignal
 ## Example:
 ##
 ## ```
-## var signal = BetterSignal.new_typed("int", "MyCustomClass") # Results in an (int, MyCustomClass) signal
-## var signal = BetterSignal.new_typed(TYPE_INT, TYPE_FLOAT, TYPE_STRING) # Results in an (int, float, string) signal
+## var signal = EasySignal.new_typed("int", "MyCustomClass") # Results in an (int, MyCustomClass) signal
+## var signal = EasySignal.new_typed(TYPE_INT, TYPE_FLOAT, TYPE_STRING) # Results in an (int, float, string) signal
 ## ```
-static func new_typed(...payload_signature: Array[Variant]) -> BetterSignal:
+static func new_typed(...payload_signature: Array[Variant]) -> EasySignal:
     # Validate that all arguments are either strings (type names) or integers (Variant.Type values)
     for arg in payload_signature:
         if not (arg is String or arg is int):
             push_error("Incorrect payload_signature value.Expect an array of int and/or String, got: " + str(payload_signature))
             return null
             
-    return BetterSignal.new(payload_signature)
+    return EasySignal.new(payload_signature)
 
 
-## Creates a new BetterSignal that does not process any payload.
+## Creates a new EasySignal that does not process any payload.
 ## Applies no signature validation and simply drops any payload received
-static func new_void() -> BetterSignal:
-    return BetterSignal.new(TYPE_NIL)
+static func new_void() -> EasySignal:
+    return EasySignal.new(TYPE_NIL)
 
-## Creates a new BetterSignal that does not accept any payload.
+## Creates a new EasySignal that does not accept any payload.
 ## Applies strict signature validation
-static func new_void_strict() -> BetterSignal:
-    var new_signal = BetterSignal.new(TYPE_NIL)
+static func new_void_strict() -> EasySignal:
+    var new_signal = EasySignal.new(TYPE_NIL)
     new_signal._void_is_strict = true
     return new_signal
 
-## Creates a new BetterSignal that accepts any payload.
+## Creates a new EasySignal that accepts any payload.
 ##
 ## Slightly more performant than a typed signal as it skips the validation logic
-static func new_untyped() -> BetterSignal:
-    return BetterSignal.new(["Variant"])
+static func new_untyped() -> EasySignal:
+    return EasySignal.new(["Variant"])
 
 
 # ===============================
@@ -60,7 +60,7 @@ var _void_is_strict: bool = false  ## If false, void signals simply drop any pay
 
 var _is_enabled: bool = true  ## Whether the signal will actually emit to subscribers
 
-var _subscribers: Array[BetterSignalSubscriber]
+var _subscribers: Array[EasySignalSubscriber]
 
 
 func get_argument_types() -> Array[String]:
@@ -92,14 +92,14 @@ func get_is_void() -> bool:
 ## Examples:
 ##
 ## ```
-## var signal = BetterSignal.new(TYPE_INT)                        #(int) signal
-## var signal = BetterSignal.new(["int", "float"])                #(int, float) signal
-## var signal = BetterSignal.new([TYPE_INT, TYPE_FLOAT])          #(int, float) signal
-## var signal = BetterSignal.new(["String", "MySpecialType"])     #(String, MySpecialType) signal
-## var signal = BetterSignal.new(null)                            #void signal (accepts no arguments)
-## var signal = BetterSignal.new([])                              #void signal (accepts no arguments)
-## var signal = BetterSignal.new(TYPE_NIL)                        #void signal (accepts no arguments)
-## var signal = BetterSignal.new("Variant")                       #variant signal (accepts any number of arguments of any type)
+## var signal = EasySignal.new(TYPE_INT)                        #(int) signal
+## var signal = EasySignal.new(["int", "float"])                #(int, float) signal
+## var signal = EasySignal.new([TYPE_INT, TYPE_FLOAT])          #(int, float) signal
+## var signal = EasySignal.new(["String", "MySpecialType"])     #(String, MySpecialType) signal
+## var signal = EasySignal.new(null)                            #void signal (accepts no arguments)
+## var signal = EasySignal.new([])                              #void signal (accepts no arguments)
+## var signal = EasySignal.new(TYPE_NIL)                        #void signal (accepts no arguments)
+## var signal = EasySignal.new("Variant")                       #variant signal (accepts any number of arguments of any type)
 ## ```
 func _init(payload_signature: Variant = TYPE_NIL):
     # Normalize input
@@ -157,7 +157,7 @@ func _init(payload_signature: Variant = TYPE_NIL):
 
 ## Adds a subscriber to the signal
 ## Adding the same callable more than once has no effect
-func add(callback: Callable) -> BetterSignalSubscriber:
+func add(callback: Callable) -> EasySignalSubscriber:
     ###########################################################################################
     # LIMITATION NOTE: Currently it is not possible to neither fully validate a callable signature nor "dectect/handle" a failed call
     # This means that it _will_ error out and log to the console
@@ -166,7 +166,7 @@ func add(callback: Callable) -> BetterSignalSubscriber:
     # So...
     # TODO: Implement a way to detect and handle failed calls if there ever is a proper way to achieve this
     ###########################################################################################
-    var subscriber: BetterSignalSubscriber = find(callback)
+    var subscriber: EasySignalSubscriber = find(callback)
     if subscriber != null:
         return subscriber
 
@@ -176,7 +176,7 @@ func add(callback: Callable) -> BetterSignalSubscriber:
         push_error('Callback "' + callback.get_method() + '" could not be added. ' + best_effort_validation["reason"])
         return null
 
-    subscriber = BetterSignalSubscriber.new(callback, self)
+    subscriber = EasySignalSubscriber.new(callback, self)
     _subscribers.append(subscriber)
     return subscriber
 
@@ -262,7 +262,7 @@ func is_enabled() -> bool:
 # Godot's built-in signal integration
 # ===============================
 
-## Collection that tracks the built-in Godot signals this BetterSignal is linked to
+## Collection that tracks the built-in Godot signals this EasySignal is linked to
 var _godot_builtin_signals_links: Array[Dictionary] = []
 
 ## Makes this signal trigger from a given signal's emissions
@@ -285,14 +285,14 @@ func link_to_godot_signal_by_name(source: Object, signal_name: String) -> void:
 
 
 
-## Disconnects this BetterSignal from a linked Godot signal
+## Disconnects this EasySignal from a linked Godot signal
 ## Returns true if the signal was disconnected, false if it was not connected in the first place
 func disconnect_from_godot_signal(godot_signal: Signal) -> bool:
     var source: Object = godot_signal.get_object()
     var signal_name: String = godot_signal.get_name()
     return disconnect_from_godot_signal_by_name(source, signal_name)
 
-## Disconnects this BetterSignal from a linked Godot signal
+## Disconnects this EasySignal from a linked Godot signal
 ## Returns true if the signal was disconnected, false if it was not connected in the first place
 func disconnect_from_godot_signal_by_name(source: Object, signal_name: String) -> bool:
     for link in _godot_builtin_signals_links:
@@ -305,7 +305,7 @@ func disconnect_from_godot_signal_by_name(source: Object, signal_name: String) -
     return true
 
 
-## Disconnects this BetterSignal from all linked Godot signals
+## Disconnects this EasySignal from all linked Godot signals
 func disconnect_from_all_godot_signals() -> void:
     for link in _godot_builtin_signals_links:
         if link.has("source") and link["source"] != null and link.has("signal_name") and link["source"].is_connected(link["signal_name"], emit):
@@ -328,7 +328,7 @@ func has(callback: Callable) -> bool:
 
 ## Finds a subscriber by its callable
 ## Returns the subscriber if found, null otherwise
-func find(callback: Callable) -> BetterSignalSubscriber:
+func find(callback: Callable) -> EasySignalSubscriber:
     for subscriber in _subscribers:
         if subscriber.has_callable(callback):
             return subscriber
@@ -414,7 +414,7 @@ func validate_payload(payload: Array[Variant]) -> Dictionary:
 
 ## Called by subscribers when their priority is changed
 func _sort_subscribers_by_priority() -> void:
-    _subscribers.sort_custom(func(a: BetterSignalSubscriber, b: BetterSignalSubscriber): return a.get_priority() > b.get_priority())
+    _subscribers.sort_custom(func(a: EasySignalSubscriber, b: EasySignalSubscriber): return a.get_priority() > b.get_priority())
 
 
 ## Prints a detailed and formatted summary of the signal's internal state.
@@ -438,7 +438,7 @@ func debug_pretty_print_state() -> void:
     
     # Header
     print("\n──────────────────────────────────────────────")
-    print(" BetterSignal Debug Summary")
+    print(" EasySignal Debug Summary")
     print("──────────────────────────────────────────────")
     print("Payload: " + signal_type + " " + signature)
     print("Subscribers: " + str(_subscribers))

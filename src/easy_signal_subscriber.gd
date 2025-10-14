@@ -1,15 +1,15 @@
-## Holds a reference to a callable registered to a BetterSignal
+## Holds a reference to a callable registered to a EasySignal
 ## Along with all of its metadata
 ##
 ## Essentially an entry in a signal's subscriber list
 
 extends RefCounted
-class_name BetterSignalSubscriber
+class_name EasySignalSubscriber
 
 var _callable: Callable  ## The callback function
 var _target_object: Object = null  ## The object that owns the callback function, null if the callback is a native function or a lambda
 var _target_method: String = ""  ## The method name of the callback function, empty string if the callback is a native function or a lambda
-var _signal: WeakRef  ## WeakRef to a BetterSignal, needed to break the ref cycle between signal and subscriber
+var _signal: WeakRef  ## WeakRef to a EasySignal, needed to break the ref cycle between signal and subscriber
 
 var _uses_left: int = -1  ## Countdown to auto-removal of this subscriber upon reaching 0, -1 for unlimited
 var _priority: int = 0  ## Priority of this subscriber, higher priority subscribers are invoked before lower priority subscribers
@@ -18,7 +18,7 @@ var emit_delay_amount: int = 0  ## Delay in frames or milliseconds before the su
 var emit_delay_type: String = "frames"  ## The type of delay: "process_frame", "physics_frame" or "ms"
 
 
-func _init(callable: Callable, owner_signal: BetterSignal):
+func _init(callable: Callable, owner_signal: EasySignal):
     _callable = callable
     _signal = weakref(owner_signal)
 
@@ -76,13 +76,13 @@ func emit_to(args: Array[Variant]) -> void:
 
 ## Makes the subscriber unregister after the first use
 ## Alias for limited_to(1)
-func once() -> BetterSignalSubscriber:
+func once() -> EasySignalSubscriber:
     _uses_left = 1
     return self
 
 
 ## Sets the uses_left to the given value
-func limited_to(uses_left: int) -> BetterSignalSubscriber:
+func limited_to(uses_left: int) -> EasySignalSubscriber:
     _uses_left = uses_left
     return self
 
@@ -90,7 +90,7 @@ func limited_to(uses_left: int) -> BetterSignalSubscriber:
 ## Sets the priority of the subscriber
 ## Higher priority subscribers are invoked before lower priority subscribers
 ## Can be any int value, including negative numbers. Defaults to 0
-func with_priority(priority: int) -> BetterSignalSubscriber:
+func with_priority(priority: int) -> EasySignalSubscriber:
     _priority = priority
     var owner_signal = _signal.get_ref()
     if owner_signal != null:
@@ -99,14 +99,14 @@ func with_priority(priority: int) -> BetterSignalSubscriber:
 
 
 ## Sets a delay for the subscriber's emission handling, in process_frames
-func with_delay_frames(delay_amount: int) -> BetterSignalSubscriber:
+func with_delay_frames(delay_amount: int) -> EasySignalSubscriber:
     emit_delay_amount = delay_amount
     emit_delay_type = "process_frame"
     return self
 
 
 ## Sets a delay for the subscriber's emission handling, in physics_frames
-func with_delay_physics_frames(delay_amount: int) -> BetterSignalSubscriber:
+func with_delay_physics_frames(delay_amount: int) -> EasySignalSubscriber:
     emit_delay_amount = delay_amount
     emit_delay_type = "physics_frame"
     return self
@@ -115,7 +115,7 @@ func with_delay_physics_frames(delay_amount: int) -> BetterSignalSubscriber:
 ## Sets a delay for the subscriber's emission handling, in milliseconds
 ##
 ## Note that priority cannot be guaranteed to be respected when using this delay type
-func with_delay_ms(delay_amount: int) -> BetterSignalSubscriber:
+func with_delay_ms(delay_amount: int) -> EasySignalSubscriber:
     emit_delay_amount = delay_amount
     emit_delay_type = "ms"
     return self
