@@ -57,13 +57,16 @@ func emit_to(args: Array[Variant]) -> void:
     # Apply _uses_left logic
     if _uses_left > 0:
         _uses_left -= 1
-
-    if _uses_left == 0:
-        if _signal.get_ref() != null:
-            _signal.get_ref().remove(self)  # TODO: Should this be safer? Deferred? Is it fine to remove from signal right _before_ invoking the callable?
+    elif _uses_left == 0:
+        return  # Already ran out,, shouldn't have been emitting (caused by delays?)
 
     # Invoke the callable
     _callable.callv(args)
+
+    # Remove if ran out
+    if _uses_left == 0:
+        if _signal.get_ref() != null:
+            _signal.get_ref().remove(self)  # TODO: Should this be safer? Deferred? Is it fine to remove from signal right _before_ invoking the callable?
 
 
 ## Makes the subscriber unregister after the first use
