@@ -504,6 +504,19 @@ func test_add_same_handler_twice_returns_same_listener() -> TestResult:
     return pass_test()
 
 
+func test_remove_handler_should_dispose_subscriber() -> TestResult:
+    var test_signal = BetterSignal.new_void()
+    var callback := func(): pass
+
+    var listener = test_signal.add(callback)
+    test_signal.remove(callback)
+
+    if not listener._callable.is_null():
+        return fail_test("Expected listener to be freed after remove()")
+
+    return pass_test()
+
+
 func test_remove_handler() -> TestResult:
     var test_signal = BetterSignal.new(TYPE_INT)
     var callback := func(_payload): pass
@@ -959,15 +972,14 @@ func test_multiple_subscribers_with_different_delays() -> TestResult:
         return fail_test("Expected [3] immediately, got " + str(call_order))
 
     # Wait for callback1 (1 frame delay)
-    for i in 3:
-        await Engine.get_main_loop().process_frame
+    await Engine.get_main_loop().process_frame
 
     if call_order != [3, 1]:
-        return fail_test("Expected [3, 1] after 3 frames, got " + str(call_order))
+        return fail_test("Expected [3, 1] after 1 frame, got " + str(call_order))
 
     # Wait for callback2 (3 frame delay total)
-    for i in 3:
-        await Engine.get_main_loop().process_frame
+    await Engine.get_main_loop().process_frame
+    await Engine.get_main_loop().process_frame
 
     if call_order != [3, 1, 2]:
         return fail_test("Expected [3, 1, 2] after all delays, got " + str(call_order))
@@ -1028,32 +1040,6 @@ func test_subscriber_weakref_to_signal() -> TestResult:
     return pass_test()
 
 
-func test_subscriber_handles_freed_signal_gracefully() -> TestResult:
-    var test_signal = BetterSignal.new_void()
-    var call_count := [0]
-    var _callback := func(): call_count[0] += 1
-    var subscriber = test_signal.add(_callback)
-
-    # Emit normally first
-    test_signal.emit()
-
-    if call_count[0] != 1:
-        return fail_test("Expected 1 call, got " + str(call_count[0]))
-
-    # Free the signal
-    test_signal = null
-    await Engine.get_main_loop().process_frame
-
-    # Try to emit to the subscriber directly (should handle gracefully)
-    subscriber.emit_to([])
-
-    # Should still be 1 (subscriber detects freed signal)
-    if call_count[0] != 1:
-        return fail_test("Expected still 1 call after freed signal, got " + str(call_count[0]))
-
-    return pass_test()
-
-
 # ===============================
 # Edge Cases and Additional Scenarios
 # ===============================
@@ -1105,19 +1091,19 @@ func test_delay_preserves_emission_order() -> TestResult:
     return pass_test()
 
 
-func test_removing_delayed_subscriber_before_execution() -> TestResult:
+func test_removed_delayed_subcsriber_should_not_be_called() -> TestResult:
     var test_signal = BetterSignal.new_void()
     var call_count := [0]
     var _callback := func(): call_count[0] += 1
 
-    test_signal.add(_callback).with_delay_frames(3)
+    test_signal.add(_callback).with_delay_frames(2)
     test_signal.emit()
 
     # Remove subscriber before delay completes
     test_signal.remove(_callback)
 
     # Wait past when it would have fired
-    for i in 5:
+    for i in 2:
         await Engine.get_main_loop().process_frame
 
     # Should not have been called

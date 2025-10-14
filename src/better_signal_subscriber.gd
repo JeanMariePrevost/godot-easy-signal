@@ -34,7 +34,7 @@ func _init(callable: Callable, owner_signal: BetterSignal):
 ## Will also remove the subscriber from its signal if its uses_left run out
 func emit_to(args: Array[Variant]) -> void:
     # Ensure callable exists
-    if _callable == null:
+    if _callable.is_null():
         if _signal.get_ref() != null:
             _signal.get_ref().remove(self)
         return
@@ -61,6 +61,11 @@ func emit_to(args: Array[Variant]) -> void:
         return  # Already ran out,, shouldn't have been emitting (caused by delays?)
 
     # Invoke the callable
+    # Ensure callable still exists after the delay
+    if _callable.is_null():
+        if _signal.get_ref() != null:
+            _signal.get_ref().remove(self)
+        return
     _callable.callv(args)
 
     # Remove if ran out
@@ -148,4 +153,20 @@ func get_uses_left() -> int:
 
 ## Returns true if the callable or target object is null or has been freed
 func is_orphaned() -> bool:
-    return _callable == null or _target_object == null or not is_instance_valid(_target_object) or _signal.get_ref() == null
+    return _callable.is_null() or _target_object == null or not is_instance_valid(_target_object) or _signal.get_ref() == null
+
+
+## Safely cleans up and removes this subscriber from its signal
+## After calling this, the subscriber should be considered dead and not used further
+## Returns true if cleanup was successful, false if there were issues
+func dispose() -> void:
+    var owner_signal = _signal.get_ref() if _signal else null
+    if owner_signal != null:
+        owner_signal._subscribers.erase(self)
+
+    # "Nullify" the callable (prevents accidental invocation)
+    _callable = Callable()  # This is how you do it for Callablesm they cannot be null proper
+
+    # Null references
+    _signal = weakref(null)  # WeakRef to null, cannot be null proper
+    _target_object = null

@@ -194,10 +194,13 @@ func emit(...args: Array[Variant]) -> void:
 
 ## Removes a subscriber from the signal, by its callable
 ## Returns true if a subscriber was removed, false otherwise
+##
+## Note: This also "disposes" the subscriber, preventing it from completing delayed invocations
 func remove(callback: Callable) -> bool:
     for subscriber in _subscribers:
         if subscriber.has_callable(callback):
             _subscribers.erase(subscriber)
+            subscriber.dispose()
             return true
     return false
 
