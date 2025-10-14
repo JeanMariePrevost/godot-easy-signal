@@ -1607,7 +1607,12 @@ func test_subscriber_get_target_object_returns_correct_object() -> TestResult:
 
     var subscriber = test_signal.add(callback)
 
-    return assert_equal(subscriber.get_target_object(), test_obj, "Expected get_target_object() to return the callback's object")
+    var object_if_correct: bool = subscriber.get_target_object() == test_obj
+
+    test_obj.free()
+    test_obj = null
+
+    return assert_true(object_if_correct, "Expected get_target_object() to return the callback's object")
 
 
 func test_subscriber_get_target_object_for_lambda_has_correct_metadata() -> TestResult:
@@ -1725,6 +1730,9 @@ func test_adding_subscriber_during_emission() -> TestResult:
 
     # Second emit should call both
     test_signal.emit()
+
+    test_signal.remove_all()
+
     if call_count[0] != 102:  # 1 + 1 + 100
         return fail_test("Expected 102 total calls after second emit, got " + str(call_count[0]))
 
@@ -1743,6 +1751,8 @@ func test_removing_subscriber_during_emission() -> TestResult:
     test_signal.add(first_callback)
     test_signal.add(second_callback)
     test_signal.emit()
+
+    test_signal.remove_all()
 
     # Both should have been called (removal happens after iteration started)
     # OR first removes second before it fires (implementation dependent)
@@ -1764,6 +1774,8 @@ func test_recursive_emission() -> TestResult:
 
     test_signal.add(recursive_callback)
     test_signal.emit(3)  # Should call 4 times total (3, 2, 1, 0)
+
+    test_signal.remove_all()
 
     if call_count[0] != 4:
         return fail_test("Expected 4 calls from recursive emission, got " + str(call_count[0]))
@@ -1839,9 +1851,9 @@ func test_purge_orphaned_subscribers_removes_orphaned_subscribers() -> TestResul
     var call_count := [0]
     var test_node = Node.new()
     var callback := func(): call_count[0] += 1
-    var subscriber1 = test_signal.add(callback)
+    var _subscriber1 = test_signal.add(callback)
     var subscriber2 = test_signal.add(test_node.can_process)
-    var subscriber3 = test_signal.add(func(): call_count[0] += 1)
+    var _subscriber3 = test_signal.add(func(): call_count[0] += 1)
 
     test_signal.emit()
 
