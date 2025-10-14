@@ -228,6 +228,17 @@ func remove_all() -> void:
     _subscribers.clear()
 
 
+## Purges all orphaned subscribers from the signal
+##
+## Orphaned subscribers are subscribers that have a target object that is null or has been freed, or whose target method is no longer valid
+func purge_orphaned_subscribers() -> void:
+    for subscriber in _subscribers:
+        if subscriber.is_orphaned():
+            _subscribers.erase(subscriber)
+            subscriber.dispose()
+    return
+
+
 ## Makes the signal no longer emit to its subscribers until re-enabled
 ## Note: This will not prevent queued delayed emissions from going through, it only prevents _new_ emissions
 func disable() -> void:

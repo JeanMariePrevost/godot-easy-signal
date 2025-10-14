@@ -1834,6 +1834,40 @@ func test_is_orphaned_detects_null_callable() -> TestResult:
     return pass_test()
 
 
+func test_purge_orphaned_subscribers_removes_orphaned_subscribers() -> TestResult:
+    var test_signal = BetterSignal.new_void()
+    var call_count := [0]
+    var test_node = Node.new()
+    var callback := func(): call_count[0] += 1
+    var subscriber1 = test_signal.add(callback)
+    var subscriber2 = test_signal.add(test_node.can_process)
+    var subscriber3 = test_signal.add(func(): call_count[0] += 1)
+
+    test_signal.emit()
+
+    test_node.free()
+    test_node = null
+
+    await Engine.get_main_loop().process_frame
+
+    if test_signal._subscribers.size() != 3:
+        return fail_test("Expected 3 subscribers, got " + str(test_signal._subscribers.size()))
+
+    test_signal.purge_orphaned_subscribers()
+
+    # COnfirm the listeners were removed from the signal
+    if test_signal._subscribers.size() != 2:
+        return fail_test("Expected 2 subscribers, got " + str(test_signal._subscribers.size()))
+
+    # Confirm subscribers 2 was disposed by simply checking that their _target_object is null
+    if subscriber2.get_target_object() != null:
+        return fail_test("Expected subscriber2 to be disposed")
+
+    test_signal.emit()
+
+    return assert_equal(4, call_count[0])
+
+
 # ===============================
 # Priority Edge Cases
 # ===============================
