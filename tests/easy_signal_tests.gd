@@ -1976,3 +1976,609 @@ func test_emit_typed_signal_with_multiple_argument_types() -> TestResult:
         return fail_test("Expected fourth arg to be Vector2(1.5, 2.5), got " + str(received_args[3]))
 
     return pass_test()
+
+
+# ===============================
+# emit_after_frames Tests
+# ===============================
+
+
+func test_emit_after_frames_basic() -> TestResult:
+    var test_signal = EasySignal.new_void()
+    var call_count := [0]
+
+    test_signal.add(func(): call_count[0] += 1)
+    test_signal.add(func(): call_count[0] += 1)
+    test_signal.emit_after_frames(2)
+
+    # Should not have been called yet
+    if call_count[0] != 0:
+        return fail_test("Expected callback to not be called immediately, got " + str(call_count[0]))
+
+    # Wait for the delay
+    for i in 3:
+        await Engine.get_main_loop().process_frame
+
+    # Should now have been dispatched to both subscribers
+    if call_count[0] != 2:
+        return fail_test("Expected callback to be called once after frames, got " + str(call_count[0]))
+
+    return pass_test()
+
+
+func test_emit_after_frames_with_payload() -> TestResult:
+    var test_signal = EasySignal.new_typed("int")
+    var received_args: Array = []
+    var callback := func(a: int): received_args.append(a)
+
+    test_signal.add(callback)
+    test_signal.emit_after_frames(2, 42)
+
+    # Should not have received yet
+    if received_args.size() != 0:
+        return fail_test("Expected no emissions yet, got " + str(received_args.size()))
+
+    # Wait for the delay
+    for i in 3:
+        await Engine.get_main_loop().process_frame
+
+    # Should have received the args
+    if received_args.size() != 1:
+        return fail_test("Expected 1 emission, got " + str(received_args.size()))
+    if received_args[0] != 42:
+        return fail_test("Expected first arg to be 42, got " + str(received_args[0]))
+
+    return pass_test()
+
+
+func test_emit_after_frames_disabled_does_not_emit() -> TestResult:
+    var test_signal = EasySignal.new_void()
+    var call_count := [0]
+    var callback := func(): call_count[0] += 1
+
+    test_signal.add(callback)
+    test_signal.emit_after_frames(2)
+
+    # Disable before the delay completes
+    test_signal.disable()
+
+    # Wait for the delay
+    for i in 3:
+        await Engine.get_main_loop().process_frame
+
+    # Should NOT have been called because signal was disabled
+    if call_count[0] != 0:
+        return fail_test("Expected callback to not be called when disabled, got " + str(call_count[0]))
+
+    return pass_test()
+
+
+func test_emit_after_frames_add_subscriber_during_delay() -> TestResult:
+    var test_signal = EasySignal.new_void()
+    var call_count1 := [0]
+    var call_count2 := [0]
+    var callback1 := func(): call_count1[0] += 1
+    var callback2 := func(): call_count2[0] += 1
+
+    test_signal.add(callback1)
+    test_signal.emit_after_frames(2)
+
+    # Wait 1 frame
+    await Engine.get_main_loop().process_frame
+
+    # Add second subscriber during the delay
+    test_signal.add(callback2)
+
+    # Wait for the rest of the delay
+    for i in 2:
+        await Engine.get_main_loop().process_frame
+
+    # Both should have been called
+    if call_count1[0] != 1:
+        return fail_test("Expected callback1 to be called once, got " + str(call_count1[0]))
+    if call_count2[0] != 1:
+        return fail_test("Expected callback2 to be called once, got " + str(call_count2[0]))
+
+    return pass_test()
+
+
+func test_emit_after_frames_remove_subscriber_during_delay() -> TestResult:
+    var test_signal = EasySignal.new_void()
+    var call_count := [0]
+    var callback := func(): call_count[0] += 1
+
+    test_signal.add(callback)
+    test_signal.emit_after_frames(2)
+
+    # Wait 1 frame
+    await Engine.get_main_loop().process_frame
+
+    # Remove subscriber during the delay
+    test_signal.remove(callback)
+
+    # Wait for the rest of the delay
+    for i in 2:
+        await Engine.get_main_loop().process_frame
+
+    # Should NOT have been called because subscriber was removed
+    if call_count[0] != 0:
+        return fail_test("Expected callback to not be called after removal, got " + str(call_count[0]))
+
+    return pass_test()
+
+
+func test_emit_after_frames_multiple_delays() -> TestResult:
+    var test_signal = EasySignal.new(TYPE_INT)
+    var received_values: Array[int] = []
+    var callback := func(val: int): received_values.append(val)
+
+    test_signal.add(callback)
+
+    # Queue multiple delayed emits
+    test_signal.emit_after_frames(2, 1)
+    test_signal.emit_after_frames(3, 2)
+    test_signal.emit_after_frames(4, 3)
+
+    # Wait for all delays to complete
+    for i in 5:
+        await Engine.get_main_loop().process_frame
+
+    # All three should have been received in order
+    if received_values != [1, 2, 3]:
+        return fail_test("Expected [1, 2, 3], got " + str(received_values))
+
+    return pass_test()
+
+
+# ===============================
+# emit_after_physics_frames Tests
+# ===============================
+
+
+func test_emit_after_physics_frames_basic() -> TestResult:
+    var test_signal = EasySignal.new_void()
+    var call_count := [0]
+    var callback := func(): call_count[0] += 1
+
+    test_signal.add(callback)
+
+    # Should not have been called yet
+    if call_count[0] != 0:
+        return fail_test("Expected callback to not be called yet, got " + str(call_count[0]))
+
+    test_signal.emit_after_physics_frames(2)
+
+    # Still should not have been called
+    if call_count[0] != 0:
+        return fail_test("Expected callback to not be called immediately, got " + str(call_count[0]))
+
+    # Wait for the delay
+    for i in 3:
+        await Engine.get_main_loop().physics_frame
+
+    # Should have been called once
+    if call_count[0] != 1:
+        return fail_test("Expected callback to be called once after physics frames, got " + str(call_count[0]))
+
+    return pass_test()
+
+
+func test_emit_after_physics_frames_with_payload() -> TestResult:
+    var test_signal = EasySignal.new([TYPE_FLOAT, TYPE_BOOL])
+    var received_args: Array = []
+    var callback := func(a: float, b: bool): received_args.append([a, b])
+
+    test_signal.add(callback)
+    test_signal.emit_after_physics_frames(2, 3.14, true)
+
+    # Should not have received yet
+    if received_args.size() != 0:
+        return fail_test("Expected no emissions yet, got " + str(received_args.size()))
+
+    # Wait for the delay
+    for i in 3:
+        await Engine.get_main_loop().physics_frame
+
+    # Should have received the args
+    if received_args.size() != 1:
+        return fail_test("Expected 1 emission, got " + str(received_args.size()))
+    if not is_equal_approx(received_args[0][0], 3.14):
+        return fail_test("Expected first arg to be ~3.14, got " + str(received_args[0][0]))
+    if received_args[0][1] != true:
+        return fail_test("Expected second arg to be true, got " + str(received_args[0][1]))
+
+    return pass_test()
+
+
+func test_emit_after_physics_frames_disabled_does_not_emit() -> TestResult:
+    var test_signal = EasySignal.new_void()
+    var call_count := [0]
+    var callback := func(): call_count[0] += 1
+
+    test_signal.add(callback)
+    test_signal.emit_after_physics_frames(2)
+
+    # Disable before the delay completes
+    test_signal.disable()
+
+    # Wait for the delay
+    for i in 3:
+        await Engine.get_main_loop().physics_frame
+
+    # Should NOT have been called because signal was disabled
+    if call_count[0] != 0:
+        return fail_test("Expected callback to not be called when disabled, got " + str(call_count[0]))
+
+    return pass_test()
+
+
+func test_emit_after_physics_frames_add_subscriber_during_delay() -> TestResult:
+    var test_signal = EasySignal.new_void()
+    var call_count1 := [0]
+    var call_count2 := [0]
+    var callback1 := func(): call_count1[0] += 1
+    var callback2 := func(): call_count2[0] += 1
+
+    test_signal.add(callback1)
+    test_signal.emit_after_physics_frames(2)
+
+    # Wait 1 physics frame
+    await Engine.get_main_loop().physics_frame
+
+    # Add second subscriber during the delay
+    test_signal.add(callback2)
+
+    # Wait for the rest of the delay
+    for i in 2:
+        await Engine.get_main_loop().physics_frame
+
+    # Both should have been called
+    if call_count1[0] != 1:
+        return fail_test("Expected callback1 to be called once, got " + str(call_count1[0]))
+    if call_count2[0] != 1:
+        return fail_test("Expected callback2 to be called once, got " + str(call_count2[0]))
+
+    return pass_test()
+
+
+func test_emit_after_physics_frames_remove_subscriber_during_delay() -> TestResult:
+    var test_signal = EasySignal.new_void()
+    var call_count := [0]
+    var callback := func(): call_count[0] += 1
+
+    test_signal.add(callback)
+    test_signal.emit_after_physics_frames(2)
+
+    # Wait 1 physics frame
+    await Engine.get_main_loop().physics_frame
+
+    # Remove subscriber during the delay
+    test_signal.remove(callback)
+
+    # Wait for the rest of the delay
+    for i in 2:
+        await Engine.get_main_loop().physics_frame
+
+    # Should NOT have been called because subscriber was removed
+    if call_count[0] != 0:
+        return fail_test("Expected callback to not be called after removal, got " + str(call_count[0]))
+
+    return pass_test()
+
+
+func test_emit_after_physics_frames_multiple_delays() -> TestResult:
+    var test_signal = EasySignal.new(TYPE_STRING)
+    var received_values: Array[String] = []
+    var callback := func(val: String): received_values.append(val)
+
+    test_signal.add(callback)
+
+    # Queue multiple delayed emits
+    test_signal.emit_after_physics_frames(2, "first")
+    test_signal.emit_after_physics_frames(3, "second")
+    test_signal.emit_after_physics_frames(4, "third")
+
+    # Wait for all delays to complete
+    for i in 5:
+        await Engine.get_main_loop().physics_frame
+
+    # All three should have been received in order
+    if received_values != ["first", "second", "third"]:
+        return fail_test("Expected [first, second, third], got " + str(received_values))
+
+    return pass_test()
+
+
+# ===============================
+# emit_after_ms Tests
+# ===============================
+
+
+func test_emit_after_ms_basic() -> TestResult:
+    var test_signal = EasySignal.new_void()
+    var call_count := [0]
+    var callback := func(): call_count[0] += 1
+
+    test_signal.add(callback)
+
+    # Should not have been called yet
+    if call_count[0] != 0:
+        return fail_test("Expected callback to not be called yet, got " + str(call_count[0]))
+
+    test_signal.emit_after_ms(50)
+
+    # Still should not have been called
+    if call_count[0] != 0:
+        return fail_test("Expected callback to not be called immediately, got " + str(call_count[0]))
+
+    # Wait for the delay (50ms + a bit extra)
+    await Engine.get_main_loop().create_timer(0.08).timeout
+
+    # Should have been called once
+    if call_count[0] != 1:
+        return fail_test("Expected callback to be called once after ms, got " + str(call_count[0]))
+
+    return pass_test()
+
+
+func test_emit_after_ms_with_payload() -> TestResult:
+    var test_signal = EasySignal.new([TYPE_STRING, TYPE_VECTOR2])
+    var received_args: Array = []
+    var callback := func(a: String, b: Vector2): received_args.append([a, b])
+
+    test_signal.add(callback)
+    test_signal.emit_after_ms(50, "test", Vector2(1.0, 2.0))
+
+    # Should not have received yet
+    if received_args.size() != 0:
+        return fail_test("Expected no emissions yet, got " + str(received_args.size()))
+
+    # Wait for the delay
+    await Engine.get_main_loop().create_timer(0.08).timeout
+
+    # Should have received the args
+    if received_args.size() != 1:
+        return fail_test("Expected 1 emission, got " + str(received_args.size()))
+    if received_args[0][0] != "test":
+        return fail_test("Expected first arg to be 'test', got " + str(received_args[0][0]))
+    if received_args[0][1] != Vector2(1.0, 2.0):
+        return fail_test("Expected second arg to be Vector2(1, 2), got " + str(received_args[0][1]))
+
+    return pass_test()
+
+
+func test_emit_after_ms_disabled_does_not_emit() -> TestResult:
+    var test_signal = EasySignal.new_void()
+    var call_count := [0]
+    var callback := func(): call_count[0] += 1
+
+    test_signal.add(callback)
+    test_signal.emit_after_ms(50)
+
+    # Disable before the delay completes
+    test_signal.disable()
+
+    # Wait for the delay
+    await Engine.get_main_loop().create_timer(0.08).timeout
+
+    # Should NOT have been called because signal was disabled
+    if call_count[0] != 0:
+        return fail_test("Expected callback to not be called when disabled, got " + str(call_count[0]))
+
+    return pass_test()
+
+
+func test_emit_after_ms_add_subscriber_during_delay() -> TestResult:
+    var test_signal = EasySignal.new_void()
+    var call_count1 := [0]
+    var call_count2 := [0]
+    var callback1 := func(): call_count1[0] += 1
+    var callback2 := func(): call_count2[0] += 1
+
+    test_signal.add(callback1)
+    test_signal.emit_after_ms(50)
+
+    # Wait a bit
+    await Engine.get_main_loop().create_timer(0.025).timeout
+
+    # Add second subscriber during the delay
+    test_signal.add(callback2)
+
+    # Wait for the rest of the delay
+    await Engine.get_main_loop().create_timer(0.06).timeout
+
+    # Both should have been called
+    if call_count1[0] != 1:
+        return fail_test("Expected callback1 to be called once, got " + str(call_count1[0]))
+    if call_count2[0] != 1:
+        return fail_test("Expected callback2 to be called once, got " + str(call_count2[0]))
+
+    return pass_test()
+
+
+func test_emit_after_ms_remove_subscriber_during_delay() -> TestResult:
+    var test_signal = EasySignal.new_void()
+    var call_count := [0]
+    var callback := func(): call_count[0] += 1
+
+    test_signal.add(callback)
+    test_signal.emit_after_ms(50)
+
+    # Wait a bit
+    await Engine.get_main_loop().create_timer(0.025).timeout
+
+    # Remove subscriber during the delay
+    test_signal.remove(callback)
+
+    # Wait for the rest of the delay
+    await Engine.get_main_loop().create_timer(0.06).timeout
+
+    # Should NOT have been called because subscriber was removed
+    if call_count[0] != 0:
+        return fail_test("Expected callback to not be called after removal, got " + str(call_count[0]))
+
+    return pass_test()
+
+
+func test_emit_after_ms_multiple_delays() -> TestResult:
+    var test_signal = EasySignal.new(TYPE_INT)
+    var received_values: Array[int] = []
+    var callback := func(val: int): received_values.append(val)
+
+    test_signal.add(callback)
+
+    # Queue multiple delayed emits with different delays
+    test_signal.emit_after_ms(50, 1)
+    test_signal.emit_after_ms(75, 2)
+    test_signal.emit_after_ms(100, 3)
+
+    # Wait for all delays to complete
+    await Engine.get_main_loop().create_timer(0.15).timeout
+
+    # All three should have been received in order
+    if received_values != [1, 2, 3]:
+        return fail_test("Expected [1, 2, 3], got " + str(received_values))
+
+    return pass_test()
+
+
+func test_emit_after_ms_timing_precision() -> TestResult:
+    var test_signal = EasySignal.new_void()
+    var call_time := [0.0]
+    var start_time := Time.get_ticks_msec()
+    var callback := func(): call_time[0] = Time.get_ticks_msec() - start_time
+
+    test_signal.add(callback)
+    test_signal.emit_after_ms(50)
+
+    # Wait for emission
+    await Engine.get_main_loop().create_timer(0.08).timeout
+
+    # Check that timing was reasonably close (within 20ms tolerance for system variance)
+    if call_time[0] < 45 or call_time[0] > 70:
+        return fail_test("Expected emission around 50ms, got " + str(call_time[0]) + "ms")
+
+    return pass_test()
+
+
+func test_emit_after_frames_disabled_then_re_enabled_during_delay() -> TestResult:
+    var test_signal = EasySignal.new_void()
+    var call_count := [0]
+    var callback := func(): call_count[0] += 1
+
+    test_signal.add(callback)
+    test_signal.disable()
+    test_signal.emit_after_frames(2)
+
+    # Wait 1 frame
+    await Engine.get_main_loop().process_frame
+
+    # Re-enable during delay
+    test_signal.enable()
+
+    # Wait for the rest of the delay
+    for i in 2:
+        await Engine.get_main_loop().process_frame
+
+    # Should NOT have been called because signal was disabled when emit was triggered
+    if call_count[0] != 0:
+        return fail_test("Expected callback to not be called, got " + str(call_count[0]))
+
+    return pass_test()
+
+
+func test_emit_after_all_three_methods_together() -> TestResult:
+    var test_signal = EasySignal.new(TYPE_STRING)
+    var received_values: Array[String] = []
+    var callback := func(val: String): received_values.append(val)
+
+    test_signal.add(callback)
+
+    # Queue all three types of delays
+    test_signal.emit_after_frames(2, "frames")
+    test_signal.emit_after_physics_frames(2, "physics")
+    test_signal.emit_after_ms(50, "timer")
+
+    # Wait for all to complete
+    for i in 3:
+        await Engine.get_main_loop().process_frame
+    for i in 3:
+        await Engine.get_main_loop().physics_frame
+    await Engine.get_main_loop().create_timer(0.08).timeout
+
+    # All three should have been received
+    if received_values.size() != 3:
+        return fail_test("Expected 3 emissions, got " + str(received_values.size()))
+    if not received_values.has("frames"):
+        return fail_test("Expected 'frames' to be emitted")
+    if not received_values.has("physics"):
+        return fail_test("Expected 'physics' to be emitted")
+    if not received_values.has("timer"):
+        return fail_test("Expected 'timer' to be emitted")
+
+    return pass_test()
+
+
+func test_emit_after_frames_with_delayed_subscriber_double_delay() -> TestResult:
+    var test_signal = EasySignal.new_void()
+    var call_count := [0]
+
+    # Add subscriber with 2-frame delay and an immediate one
+    test_signal.add(func(): call_count[0] += 1).with_delay_frames(2)
+    test_signal.add(func(): call_count[0] += 1)
+
+    # Emit with frame delay (signal-level delay)
+    test_signal.emit_after_frames(1)
+
+    # Nothing should have fired immediately
+    if call_count[0] != 0:
+        return fail_test("Expected no calls immediately, got " + str(call_count[0]))
+
+    # Wait for the emit delay
+    await Engine.get_main_loop().process_frame
+
+    # The immediate subscriber should have been called
+    if call_count[0] != 1:
+        return fail_test("Expected 1 call, got " + str(call_count[0]))
+
+    # Wait for the subscriber delay
+    await Engine.get_main_loop().process_frame
+    await Engine.get_main_loop().process_frame
+
+    # The delayed subscriber should have been called
+    if call_count[0] != 2:
+        return fail_test("Expected 2 calls, got " + str(call_count[0]))
+
+    return pass_test()
+
+
+func test_emit_after_frames_disabled_does_not_queue() -> TestResult:
+    var test_signal = EasySignal.new_void()
+    var call_count := [0]
+    var callback := func(): call_count[0] += 1
+
+    test_signal.add(callback)
+    test_signal.disable()
+    test_signal.emit_after_frames(1)
+
+    await Engine.get_main_loop().process_frame
+
+    # Should NOT have been called because signal was disabled when emission was scheduled
+    return assert_equal(call_count[0], 0)
+
+
+func test_emit_after_frames_disabled_then_reenabled_emits() -> TestResult:
+    var test_signal = EasySignal.new_void()
+    var call_count := [0]
+    var callback := func(): call_count[0] += 1
+
+    test_signal.add(callback)
+    test_signal.emit_after_frames(2)
+
+    test_signal.disable()  # Disable during the delay
+    await Engine.get_main_loop().process_frame
+    test_signal.enable()  # Re-enable before it runs out
+    await Engine.get_main_loop().process_frame
+
+    # Bit of a strange case, but expected behavior is that it _would_ go through
+    return assert_equal(call_count[0], 1)

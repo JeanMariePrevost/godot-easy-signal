@@ -210,6 +210,56 @@ func emit(...args: Array[Variant]) -> void:
         subscriber.emit_to(args)
 
 
+## Emits after a number of process_frames
+## Applies to the entire signal, on top of any individual subscriber's delay that might be set
+func emit_after_frames(delay_amount: int, ...args: Array[Variant]) -> void:
+    if not _is_enabled:
+        return
+
+    var tree: SceneTree = Engine.get_main_loop() as SceneTree
+    if tree:
+        var _hack_to_keep_this_context_alive_yes_this_is_currently_required = self  # Without this, the context is garbage collected and the delay logic fails. We need a reference to keep it alive. It's a known issue: https://github.com/godotengine/godot/issues/81210
+        for _i in delay_amount:
+            await tree.process_frame
+        emit.callv(args) # Using callv to about "double boxing" the arguments
+    else:
+        push_error("EasySignal.emit_after_frames: Failed to get main loop")
+        return
+
+
+## Emits after a number of physics_frames
+## Applies to the entire signal, on top of any individual subscriber's delay that might be set
+func emit_after_physics_frames(delay_amount: int, ...args: Array[Variant]) -> void:
+    if not _is_enabled:
+        return
+
+    var tree: SceneTree = Engine.get_main_loop() as SceneTree
+    if tree:
+        var _hack_to_keep_this_context_alive_yes_this_is_currently_required = self  # Without this, the context is garbage collected and the delay logic fails. We need a reference to keep it alive. It's a known issue: https://github.com/godotengine/godot/issues/81210
+        for _i in delay_amount:
+            await tree.physics_frame
+        emit.callv(args) # Using callv to about "double boxing" the arguments
+    else:
+        push_error("EasySignal.emit_after_physics_frames: Failed to get main loop")
+        return
+
+
+## Emits after a number of milliseconds
+## Applies to the entire signal, on top of any individual subscriber's delay that might be set
+func emit_after_ms(delay_amount: int, ...args: Array[Variant]) -> void:
+    if not _is_enabled:
+        return
+
+    var tree: SceneTree = Engine.get_main_loop() as SceneTree
+    if tree:
+        var _hack_to_keep_this_context_alive_yes_this_is_currently_required = self  # Without this, the context is garbage collected and the delay logic fails. We need a reference to keep it alive. It's a known issue: https://github.com/godotengine/godot/issues/81210
+        await tree.create_timer(delay_amount / 1000.0).timeout
+        emit.callv(args) # Using callv to about "double boxing" the arguments
+    else:
+        push_error("EasySignal.emit_after_ms: Failed to get main loop")
+        return
+
+
 ## Removes a subscriber from the signal, by its callable
 ## Returns true if a subscriber was removed, false otherwise
 ##
@@ -240,7 +290,13 @@ func purge_orphaned_subscribers() -> void:
 
 
 ## Makes the signal no longer emit to its subscribers until re-enabled
-## Note: This will not prevent queued delayed emissions from going through, it only prevents _new_ emissions
+##
+## Notes: 
+## - Prevents emit() from going through
+## - Prevents emit_after_x() from queueing new emissions
+## - Prevents emit_after_x() that run out from going through
+## - Does _not_ stop already queued emissions from going through if the signal is re-enabled when they run out
+## - Subscribers that have already been queued will still go through regardless of the signal's state
 func disable() -> void:
     _is_enabled = false
 
