@@ -20,7 +20,7 @@ export_presets.cfg
 # Exclude my own tools
 /addons/lbg_tools/
 /godot_tools/
-/test_runner/
+/addons/lbg.godot.gdscript.gdtest/
 
 # Assets files
 *.png

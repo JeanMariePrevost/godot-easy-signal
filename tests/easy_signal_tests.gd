@@ -1,4 +1,4 @@
-extends TestFile
+extends GDTestCase
 
 ## NOTE: Mostly AI-generated and unverified tests
 
@@ -7,7 +7,7 @@ extends TestFile
 # ===============================
 
 
-func test_new_typed_single_type() -> TestResult:
+func test_new_typed_single_type() -> GDTestResult:
     var test_signal = EasySignal.new_typed("int")
 
     if test_signal.get_argument_count() != 1:
@@ -22,7 +22,7 @@ func test_new_typed_single_type() -> TestResult:
     return pass_test()
 
 
-func test_new_typed_multiple_types() -> TestResult:
+func test_new_typed_multiple_types() -> GDTestResult:
     var test_signal = EasySignal.new_typed("int", "float", "String")
 
     if test_signal.get_argument_count() != 3:
@@ -37,7 +37,7 @@ func test_new_typed_multiple_types() -> TestResult:
     return pass_test()
 
 
-func test_new_typed_bad_input_returns_null() -> TestResult:
+func test_new_typed_bad_input_returns_null() -> GDTestResult:
     var test_signal = EasySignal.new_typed([["int", "float", "String"]])
 
     if test_signal == null:
@@ -46,7 +46,7 @@ func test_new_typed_bad_input_returns_null() -> TestResult:
         return fail_test("Expected signal to be null")
 
 
-func test_new_void() -> TestResult:
+func test_new_void() -> GDTestResult:
     var test_signal = EasySignal.new_void()
 
     if test_signal.get_argument_count() != 0:
@@ -61,7 +61,7 @@ func test_new_void() -> TestResult:
     return pass_test()
 
 
-func test_new_untyped() -> TestResult:
+func test_new_untyped() -> GDTestResult:
     var test_signal = EasySignal.new_untyped()
 
     if test_signal.get_argument_count() != 1:
@@ -76,7 +76,7 @@ func test_new_untyped() -> TestResult:
     return pass_test()
 
 
-func test_init_single_type_int() -> TestResult:
+func test_init_single_type_int() -> GDTestResult:
     var test_signal = EasySignal.new(TYPE_INT)
 
     if test_signal.get_argument_count() != 1:
@@ -91,7 +91,7 @@ func test_init_single_type_int() -> TestResult:
     return pass_test()
 
 
-func test_init_single_type_float() -> TestResult:
+func test_init_single_type_float() -> GDTestResult:
     var test_signal = EasySignal.new(TYPE_FLOAT)
 
     if test_signal.get_argument_count() != 1:
@@ -106,7 +106,7 @@ func test_init_single_type_float() -> TestResult:
     return pass_test()
 
 
-func test_init_single_type_string() -> TestResult:
+func test_init_single_type_string() -> GDTestResult:
     var test_signal = EasySignal.new(TYPE_STRING)
 
     if test_signal.get_argument_count() != 1:
@@ -121,7 +121,7 @@ func test_init_single_type_string() -> TestResult:
     return pass_test()
 
 
-func test_init_array_of_types() -> TestResult:
+func test_init_array_of_types() -> GDTestResult:
     var test_signal = EasySignal.new([TYPE_INT, TYPE_FLOAT])
 
     if test_signal.get_argument_count() != 2:
@@ -136,7 +136,7 @@ func test_init_array_of_types() -> TestResult:
     return pass_test()
 
 
-func test_init_array_of_types_mixed() -> TestResult:
+func test_init_array_of_types_mixed() -> GDTestResult:
     var test_signal = EasySignal.new([TYPE_STRING, TYPE_BOOL, TYPE_VECTOR2])
 
     if test_signal.get_argument_count() != 3:
@@ -151,7 +151,7 @@ func test_init_array_of_types_mixed() -> TestResult:
     return pass_test()
 
 
-func test_init_single_string_type() -> TestResult:
+func test_init_single_string_type() -> GDTestResult:
     var test_signal = EasySignal.new("int")
 
     if test_signal.get_argument_count() != 1:
@@ -166,7 +166,7 @@ func test_init_single_string_type() -> TestResult:
     return pass_test()
 
 
-func test_init_custom_class_name() -> TestResult:
+func test_init_custom_class_name() -> GDTestResult:
     var test_signal = EasySignal.new("MySpecialType")
 
     if test_signal.get_argument_count() != 1:
@@ -181,7 +181,7 @@ func test_init_custom_class_name() -> TestResult:
     return pass_test()
 
 
-func test_init_array_of_string_types() -> TestResult:
+func test_init_array_of_string_types() -> GDTestResult:
     var test_signal = EasySignal.new(["int", "float"])
 
     if test_signal.get_argument_count() != 2:
@@ -196,7 +196,7 @@ func test_init_array_of_string_types() -> TestResult:
     return pass_test()
 
 
-func test_init_array_of_string_types_with_custom() -> TestResult:
+func test_init_array_of_string_types_with_custom() -> GDTestResult:
     var test_signal = EasySignal.new(["String", "MySpecialType"])
 
     if test_signal.get_argument_count() != 2:
@@ -211,7 +211,7 @@ func test_init_array_of_string_types_with_custom() -> TestResult:
     return pass_test()
 
 
-func test_init_void_with_null() -> TestResult:
+func test_init_void_with_null() -> GDTestResult:
     var test_signal = EasySignal.new(null)
 
     if test_signal.get_argument_count() != 0:
@@ -226,7 +226,7 @@ func test_init_void_with_null() -> TestResult:
     return pass_test()
 
 
-func test_init_void_with_type_nil() -> TestResult:
+func test_init_void_with_type_nil() -> GDTestResult:
     var test_signal = EasySignal.new(TYPE_NIL)
 
     if test_signal.get_argument_count() != 0:
@@ -241,7 +241,7 @@ func test_init_void_with_type_nil() -> TestResult:
     return pass_test()
 
 
-func test_init_void_with_empty_array() -> TestResult:
+func test_init_void_with_empty_array() -> GDTestResult:
     var test_signal = EasySignal.new([])
 
     if test_signal.get_argument_count() != 0:
@@ -256,7 +256,7 @@ func test_init_void_with_empty_array() -> TestResult:
     return pass_test()
 
 
-func test_init_void_with_no_args() -> TestResult:
+func test_init_void_with_no_args() -> GDTestResult:
     var test_signal = EasySignal.new()
 
     if test_signal.get_argument_count() != 0:
@@ -271,7 +271,7 @@ func test_init_void_with_no_args() -> TestResult:
     return pass_test()
 
 
-func test_init_variant_with_string() -> TestResult:
+func test_init_variant_with_string() -> GDTestResult:
     var test_signal = EasySignal.new("Variant")
 
     if test_signal.get_argument_count() != 1:
@@ -286,7 +286,7 @@ func test_init_variant_with_string() -> TestResult:
     return pass_test()
 
 
-func test_init_variant_with_array() -> TestResult:
+func test_init_variant_with_array() -> GDTestResult:
     var test_signal = EasySignal.new(["Variant"])
 
     if test_signal.get_argument_count() != 1:
@@ -301,7 +301,7 @@ func test_init_variant_with_array() -> TestResult:
     return pass_test()
 
 
-func test_init_array_mixed_type_and_string() -> TestResult:
+func test_init_array_mixed_type_and_string() -> GDTestResult:
     var test_signal = EasySignal.new([TYPE_INT, "float", TYPE_STRING])
 
     if test_signal.get_argument_count() != 3:
@@ -316,7 +316,7 @@ func test_init_array_mixed_type_and_string() -> TestResult:
     return pass_test()
 
 
-func test_init_all_basic_types() -> TestResult:
+func test_init_all_basic_types() -> GDTestResult:
     var test_signal = (
         EasySignal
         . new(
@@ -346,7 +346,7 @@ func test_init_all_basic_types() -> TestResult:
     return pass_test()
 
 
-func test_init_type_array() -> TestResult:
+func test_init_type_array() -> GDTestResult:
     var test_signal = EasySignal.new(TYPE_ARRAY)
 
     if test_signal.get_argument_count() != 1:
@@ -361,7 +361,7 @@ func test_init_type_array() -> TestResult:
     return pass_test()
 
 
-func test_init_type_dictionary() -> TestResult:
+func test_init_type_dictionary() -> GDTestResult:
     var test_signal = EasySignal.new(TYPE_DICTIONARY)
 
     if test_signal.get_argument_count() != 1:
@@ -376,7 +376,7 @@ func test_init_type_dictionary() -> TestResult:
     return pass_test()
 
 
-func test_init_type_object() -> TestResult:
+func test_init_type_object() -> GDTestResult:
     var test_signal = EasySignal.new(TYPE_OBJECT)
 
     if test_signal.get_argument_count() != 1:
@@ -396,7 +396,7 @@ func test_init_type_object() -> TestResult:
 # ===============================
 
 
-func test_init_invalid_type_bool_defaults_to_untyped() -> TestResult:
+func test_init_invalid_type_bool_defaults_to_untyped() -> GDTestResult:
     var test_signal = EasySignal.new(true)
 
     if test_signal.get_argument_count() != 1:
@@ -411,7 +411,7 @@ func test_init_invalid_type_bool_defaults_to_untyped() -> TestResult:
     return pass_test()
 
 
-func test_init_invalid_type_object_defaults_to_untyped() -> TestResult:
+func test_init_invalid_type_object_defaults_to_untyped() -> GDTestResult:
     var test_object = Object.new()
     var test_signal = EasySignal.new(test_object)
     test_object.free()
@@ -428,7 +428,7 @@ func test_init_invalid_type_object_defaults_to_untyped() -> TestResult:
     return pass_test()
 
 
-func test_init_invalid_array_with_invalid_element_defaults_to_untyped() -> TestResult:
+func test_init_invalid_array_with_invalid_element_defaults_to_untyped() -> GDTestResult:
     var test_signal = EasySignal.new([TYPE_INT, true, TYPE_FLOAT])  # Should default to untyped
 
     if test_signal.get_argument_count() != 1:
@@ -443,7 +443,7 @@ func test_init_invalid_array_with_invalid_element_defaults_to_untyped() -> TestR
     return pass_test()
 
 
-func test_init_invalid_type_constant_out_of_range_defaults_to_untyped() -> TestResult:
+func test_init_invalid_type_constant_out_of_range_defaults_to_untyped() -> GDTestResult:
     var test_signal = EasySignal.new(-1)  # Should default to untyped
 
     if test_signal.get_argument_count() != 1:
@@ -458,7 +458,7 @@ func test_init_invalid_type_constant_out_of_range_defaults_to_untyped() -> TestR
     return pass_test()
 
 
-func test_init_array_with_null_defaults_to_untyped() -> TestResult:
+func test_init_array_with_null_defaults_to_untyped() -> GDTestResult:
     var test_signal = EasySignal.new(["String", null, "int"])  # Should default to untyped
     if test_signal.get_argument_count() != 1:
         return fail_test("Expected argument count to be 1, got " + str(test_signal.get_argument_count()))
@@ -477,7 +477,7 @@ func test_init_array_with_null_defaults_to_untyped() -> TestResult:
 # # ===============================
 
 
-func test_add_handler() -> TestResult:
+func test_add_handler() -> GDTestResult:
     var test_signal = EasySignal.new(TYPE_INT)
     var callback: Callable = func(_payload): pass
 
@@ -491,7 +491,7 @@ func test_add_handler() -> TestResult:
     return pass_test()
 
 
-func test_add_same_handler_twice_returns_same_listener() -> TestResult:
+func test_add_same_handler_twice_returns_same_listener() -> GDTestResult:
     var test_signal = EasySignal.new(TYPE_INT)
     var callback := func(_payload): pass
 
@@ -504,7 +504,7 @@ func test_add_same_handler_twice_returns_same_listener() -> TestResult:
     return pass_test()
 
 
-func test_remove_handler_should_dispose_subscriber() -> TestResult:
+func test_remove_handler_should_dispose_subscriber() -> GDTestResult:
     var test_signal = EasySignal.new_void()
     var callback := func(): pass
 
@@ -517,7 +517,7 @@ func test_remove_handler_should_dispose_subscriber() -> TestResult:
     return pass_test()
 
 
-func test_remove_handler() -> TestResult:
+func test_remove_handler() -> GDTestResult:
     var test_signal = EasySignal.new(TYPE_INT)
     var callback := func(_payload): pass
 
@@ -532,7 +532,7 @@ func test_remove_handler() -> TestResult:
     return pass_test()
 
 
-func test_remove_nonexistent_handler() -> TestResult:
+func test_remove_nonexistent_handler() -> GDTestResult:
     var test_signal = EasySignal.new(TYPE_INT)
     var callback := func(_payload): pass
 
@@ -544,7 +544,7 @@ func test_remove_nonexistent_handler() -> TestResult:
     return pass_test()
 
 
-func test_remove_all_handlers() -> TestResult:
+func test_remove_all_handlers() -> GDTestResult:
     var test_signal = EasySignal.new(TYPE_INT)
     var callback1 := func(_payload): pass
     var callback2 := func(_payload): pass
@@ -559,7 +559,7 @@ func test_remove_all_handlers() -> TestResult:
     return pass_test()
 
 
-func test_emit_void_signal() -> TestResult:
+func test_emit_void_signal() -> GDTestResult:
     var test_signal = EasySignal.new_void()
     var call_count := [0]
     var callback := func(): call_count[0] += 1
@@ -573,7 +573,7 @@ func test_emit_void_signal() -> TestResult:
     return pass_test()
 
 
-func test_emit_void_signal_with_payload_goes_through() -> TestResult:
+func test_emit_void_signal_with_payload_goes_through() -> GDTestResult:
     var test_signal = EasySignal.new_void()
     var call_count := [0]
     var callback := func(): call_count[0] += 1
@@ -584,7 +584,7 @@ func test_emit_void_signal_with_payload_goes_through() -> TestResult:
     return assert_equal(1, call_count[0])
 
 
-func test_emit_strict_void_signal_with_payload_does_not_go_through() -> TestResult:
+func test_emit_strict_void_signal_with_payload_does_not_go_through() -> GDTestResult:
     var test_signal = EasySignal.new_void_strict()
     var call_count := [0]
     var callback := func(): call_count[0] += 1
@@ -598,7 +598,7 @@ func test_emit_strict_void_signal_with_payload_does_not_go_through() -> TestResu
     return pass_test()
 
 
-func test_emit_typed_signal_single_payload() -> TestResult:
+func test_emit_typed_signal_single_payload() -> GDTestResult:
     var test_signal = EasySignal.new(TYPE_INT)
     var received_payload := [null]
     var callback := func(payload): received_payload[0] = payload
@@ -612,7 +612,7 @@ func test_emit_typed_signal_single_payload() -> TestResult:
     return pass_test()
 
 
-func test_emit_typed_signal_with_invalid_payload() -> TestResult:
+func test_emit_typed_signal_with_invalid_payload() -> GDTestResult:
     var test_signal = EasySignal.new(TYPE_INT)
     var call_count := [0]
     var _callback := func(_payload): call_count[0] += 1
@@ -626,7 +626,7 @@ func test_emit_typed_signal_with_invalid_payload() -> TestResult:
     return pass_test()
 
 
-func test_emit_variant_signal_with_different_types() -> TestResult:
+func test_emit_variant_signal_with_different_types() -> GDTestResult:
     var test_signal = EasySignal.new_untyped()
     var received_payloads: Array[Variant] = []
     var callback: Callable = func(payload: Variant): received_payloads.append(payload)
@@ -648,7 +648,7 @@ func test_emit_variant_signal_with_different_types() -> TestResult:
     return pass_test()
 
 
-func test_emit_calls_multiple_handlers() -> TestResult:
+func test_emit_calls_multiple_handlers() -> GDTestResult:
     var test_signal = EasySignal.new(TYPE_INT)
     var call_count1 := [0]
     var call_count2 := [0]
@@ -667,7 +667,7 @@ func test_emit_calls_multiple_handlers() -> TestResult:
     return pass_test()
 
 
-func test_emit_after_handler_removed() -> TestResult:
+func test_emit_after_handler_removed() -> GDTestResult:
     var test_signal = EasySignal.new(TYPE_INT)
     var call_count := [0]
     var callback := func(_payload): call_count[0] += 1
@@ -683,7 +683,7 @@ func test_emit_after_handler_removed() -> TestResult:
     return pass_test()
 
 
-func test_emit_with_priority() -> TestResult:
+func test_emit_with_priority() -> GDTestResult:
     var test_signal = EasySignal.new()
     var results: Array[int] = []
     var callback1: Callable = func(): results.append(1)
@@ -701,7 +701,7 @@ func test_emit_with_priority() -> TestResult:
     return pass_test()
 
 
-func test_emit_with_priority_post_emit() -> TestResult:
+func test_emit_with_priority_post_emit() -> GDTestResult:
     var test_signal = EasySignal.new()
     var results: Array[int] = []
     var callback1: Callable = func(): results.append(1)
@@ -739,7 +739,7 @@ func test_emit_with_priority_post_emit() -> TestResult:
     return pass_test()
 
 
-func test_priority_resets_after_remove() -> TestResult:
+func test_priority_resets_after_remove() -> GDTestResult:
     var test_signal = EasySignal.new()
     var results: Array[int] = []
     var callback1: Callable = func(): results.append(1)
@@ -779,7 +779,7 @@ func test_priority_resets_after_remove() -> TestResult:
 # ===============================
 
 
-func test_delay_prevents_immediate_execution() -> TestResult:
+func test_delay_prevents_immediate_execution() -> GDTestResult:
     var test_signal = EasySignal.new_void()
     var call_count := [0]
     var _callback := func(): call_count[0] += 1
@@ -798,7 +798,7 @@ func test_delay_prevents_immediate_execution() -> TestResult:
     return pass_test()
 
 
-func test_frame_delay_executes_at_the_right_frame() -> TestResult:
+func test_frame_delay_executes_at_the_right_frame() -> GDTestResult:
     var test_signal = EasySignal.new_void()
     var call_count := [0]
     var _callback := func(): call_count[0] += 1
@@ -825,7 +825,7 @@ func test_frame_delay_executes_at_the_right_frame() -> TestResult:
     return pass_test()
 
 
-func test_physics_frame_delay_prevents_immediate_execution() -> TestResult:
+func test_physics_frame_delay_prevents_immediate_execution() -> GDTestResult:
     var test_signal = EasySignal.new_void()
     var call_count := [0]
     var _callback := func(): call_count[0] += 1
@@ -845,7 +845,7 @@ func test_physics_frame_delay_prevents_immediate_execution() -> TestResult:
     return pass_test()
 
 
-func test_ms_delay_prevents_immediate_execution() -> TestResult:
+func test_ms_delay_prevents_immediate_execution() -> GDTestResult:
     var test_signal = EasySignal.new_void()
     var call_count := [0]
     var _callback := func(): call_count[0] += 1
@@ -863,7 +863,7 @@ func test_ms_delay_prevents_immediate_execution() -> TestResult:
     return pass_test()
 
 
-func test_zero_delay_executes_immediately() -> TestResult:
+func test_zero_delay_executes_immediately() -> GDTestResult:
     var test_signal = EasySignal.new_void()
     var call_count := [0]
     var _callback := func(): call_count[0] += 1
@@ -878,7 +878,7 @@ func test_zero_delay_executes_immediately() -> TestResult:
     return pass_test()
 
 
-func test_delay_with_payload() -> TestResult:
+func test_delay_with_payload() -> GDTestResult:
     var test_signal = EasySignal.new(TYPE_INT)
     var received_value := [null]
     var _callback := func(value): received_value[0] = value
@@ -902,7 +902,7 @@ func test_delay_with_payload() -> TestResult:
     return pass_test()
 
 
-func test_delay_with_once() -> TestResult:
+func test_delay_with_once() -> GDTestResult:
     var test_signal = EasySignal.new_void()
     var call_count := [0]
     var _callback := func(): call_count[0] += 1
@@ -931,7 +931,7 @@ func test_delay_with_once() -> TestResult:
     return pass_test()
 
 
-func test_delay_with_limited_to() -> TestResult:
+func test_delay_with_limited_to() -> GDTestResult:
     var test_signal = EasySignal.new_void()
     var call_count := [0]
     var _callback := func(): call_count[0] += 1
@@ -965,7 +965,7 @@ func test_delay_with_limited_to() -> TestResult:
     return pass_test()
 
 
-func test_multiple_subscribers_with_different_delays() -> TestResult:
+func test_multiple_subscribers_with_different_delays() -> GDTestResult:
     var test_signal = EasySignal.new_void()
     var call_order: Array[int] = []
     var _callback1 := func(): call_order.append(1)
@@ -998,7 +998,7 @@ func test_multiple_subscribers_with_different_delays() -> TestResult:
     return pass_test()
 
 
-func test_delay_with_priority() -> TestResult:
+func test_delay_with_priority() -> GDTestResult:
     var test_signal = EasySignal.new_void()
     var call_order: Array[int] = []
     var _callback1 := func(): call_order.append(1)
@@ -1031,7 +1031,7 @@ func test_delay_with_priority() -> TestResult:
 # ===============================
 
 
-func test_subscriber_weakref_to_signal() -> TestResult:
+func test_subscriber_weakref_to_signal() -> GDTestResult:
     var test_signal = EasySignal.new_void()
     var _callback := func(): pass
     var subscriber = test_signal.add(_callback)
@@ -1056,7 +1056,7 @@ func test_subscriber_weakref_to_signal() -> TestResult:
 # ===============================
 
 
-func test_multiple_emissions_with_delay() -> TestResult:
+func test_multiple_emissions_with_delay() -> GDTestResult:
     var test_signal = EasySignal.new(TYPE_INT)
     var received_values: Array[int] = []
     var _callback := func(value: int): received_values.append(value)
@@ -1079,7 +1079,7 @@ func test_multiple_emissions_with_delay() -> TestResult:
     return pass_test()
 
 
-func test_delay_preserves_emission_order() -> TestResult:
+func test_delay_preserves_emission_order() -> GDTestResult:
     var test_signal = EasySignal.new(TYPE_STRING)
     var received_values: Array[String] = []
     var _callback := func(value: String): received_values.append(value)
@@ -1102,7 +1102,7 @@ func test_delay_preserves_emission_order() -> TestResult:
     return pass_test()
 
 
-func test_removed_delayed_subcsriber_should_not_be_called() -> TestResult:
+func test_removed_delayed_subcsriber_should_not_be_called() -> GDTestResult:
     var test_signal = EasySignal.new_void()
     var call_count := [0]
     var _callback := func(): call_count[0] += 1
@@ -1124,7 +1124,7 @@ func test_removed_delayed_subcsriber_should_not_be_called() -> TestResult:
     return pass_test()
 
 
-func test_delay_ms_executes_after_time() -> TestResult:
+func test_delay_ms_executes_after_time() -> GDTestResult:
     var test_signal = EasySignal.new_void()
     var call_count := [0]
     var _callback := func(): call_count[0] += 1
@@ -1146,7 +1146,7 @@ func test_delay_ms_executes_after_time() -> TestResult:
     return pass_test()
 
 
-func test_subscriber_getters() -> TestResult:
+func test_subscriber_getters() -> GDTestResult:
     var test_signal = EasySignal.new_void()
     var _callback := func(): pass
 
@@ -1173,25 +1173,25 @@ func test_subscriber_getters() -> TestResult:
 # ===============================
 
 
-func test_signal_enabled_by_default() -> TestResult:
+func test_signal_enabled_by_default() -> GDTestResult:
     var test_signal = EasySignal.new_void()
     return assert_true(test_signal.is_enabled(), "Expected signal to be enabled by default after creation")
 
 
-func test_signal_disable_changes_enabled_state() -> TestResult:
+func test_signal_disable_changes_enabled_state() -> GDTestResult:
     var test_signal = EasySignal.new_void()
     test_signal.disable()
     return assert_false(test_signal.is_enabled(), "Expected signal to be disabled after disable()")
 
 
-func test_signal_enable_changes_enabled_state() -> TestResult:
+func test_signal_enable_changes_enabled_state() -> GDTestResult:
     var test_signal = EasySignal.new_void()
     test_signal.disable()
     test_signal.enable()
     return assert_true(test_signal.is_enabled(), "Expected signal to be enabled after enable()")
 
 
-func test_signal_disabled_does_not_emit() -> TestResult:
+func test_signal_disabled_does_not_emit() -> GDTestResult:
     var test_signal = EasySignal.new_void()
     var call_count := [0]
     var _callback := func(): call_count[0] += 1
@@ -1200,7 +1200,7 @@ func test_signal_disabled_does_not_emit() -> TestResult:
     return assert_false(call_count[0] > 0, "Expected 0 calls after disable()")
 
 
-func test_signal_re_enabled_does_emit() -> TestResult:
+func test_signal_re_enabled_does_emit() -> GDTestResult:
     var test_signal = EasySignal.new_void()
     var call_count := [0]
     var _callback := func(): call_count[0] += 1
@@ -1211,7 +1211,7 @@ func test_signal_re_enabled_does_emit() -> TestResult:
     return assert_true(call_count[0] > 0, "Expected 1 call after enable()")
 
 
-func test_signal_disabled_with_delay_does_not_emit() -> TestResult:
+func test_signal_disabled_with_delay_does_not_emit() -> GDTestResult:
     var test_signal = EasySignal.new_void()
     var call_count := [0]
     var _callback := func(): call_count[0] += 1
@@ -1221,7 +1221,7 @@ func test_signal_disabled_with_delay_does_not_emit() -> TestResult:
     return assert_false(call_count[0] > 0, "Expected 0 calls after disable()")
 
 
-func test_signal_disabled_signal_does_not_queue_delayed_emissions() -> TestResult:
+func test_signal_disabled_signal_does_not_queue_delayed_emissions() -> GDTestResult:
     var test_signal = EasySignal.new_void()
     var call_count := [0]
     var _callback := func(): call_count[0] += 1
@@ -1233,7 +1233,7 @@ func test_signal_disabled_signal_does_not_queue_delayed_emissions() -> TestResul
     return assert_false(call_count[0] > 0, "Expected 0 calls after disable()")
 
 
-func test_disabling_signal_does_not_stop_queued_delayed_emissions() -> TestResult:
+func test_disabling_signal_does_not_stop_queued_delayed_emissions() -> GDTestResult:
     var test_signal = EasySignal.new_void()
     var call_count := [0]
     var _callback := func(): call_count[0] += 1
@@ -1250,13 +1250,13 @@ func test_disabling_signal_does_not_stop_queued_delayed_emissions() -> TestResul
 # ===============================
 
 
-func test_signal_link_to_godot_signal_adds_link_to_internal_list() -> TestResult:
+func test_signal_link_to_godot_signal_adds_link_to_internal_list() -> GDTestResult:
     var test_signal = EasySignal.new_void()
     test_signal.link_to_godot_signal(Engine.get_main_loop().process_frame)
     return assert_equal(1, test_signal._godot_builtin_signals_links.size())
 
 
-func test_adding_same_callback_multiple_times_does_not_duplicate() -> TestResult:
+func test_adding_same_callback_multiple_times_does_not_duplicate() -> GDTestResult:
     var test_signal = EasySignal.new_void()
     var call_count := [0]
     var callback := func(): call_count[0] += 1
@@ -1270,7 +1270,7 @@ func test_adding_same_callback_multiple_times_does_not_duplicate() -> TestResult
     return assert_equal(1, test_signal._subscribers.size(), "Expected only 1 subscriber when adding same callback multiple times")
 
 
-func test_adding_same_callback_multiple_times_only_calls_once() -> TestResult:
+func test_adding_same_callback_multiple_times_only_calls_once() -> GDTestResult:
     var test_signal = EasySignal.new_void()
     var call_count := [0]
     var callback := func(): call_count[0] += 1
@@ -1285,13 +1285,13 @@ func test_adding_same_callback_multiple_times_only_calls_once() -> TestResult:
     return assert_equal(1, call_count[0], "Expected callback to be called only once despite multiple adds")
 
 
-func test_signal_link_to_godot_signal_by_name_adds_link_to_internal_list() -> TestResult:
+func test_signal_link_to_godot_signal_by_name_adds_link_to_internal_list() -> GDTestResult:
     var test_signal = EasySignal.new_void()
     test_signal.link_to_godot_signal_by_name(Engine.get_main_loop(), "process_frame")
     return assert_equal(1, test_signal._godot_builtin_signals_links.size())
 
 
-func test_signal_link_to_godot_signal_emits_with_it() -> TestResult:
+func test_signal_link_to_godot_signal_emits_with_it() -> GDTestResult:
     var test_signal = EasySignal.new_void()
     var call_count := [0]
     test_signal.add(func(): call_count[0] += 1)
@@ -1300,7 +1300,7 @@ func test_signal_link_to_godot_signal_emits_with_it() -> TestResult:
     return assert_equal(1, call_count[0])
 
 
-func test_signal_link_to_godot_signal_by_name_emits_with_it() -> TestResult:
+func test_signal_link_to_godot_signal_by_name_emits_with_it() -> GDTestResult:
     var test_signal = EasySignal.new_void()
     var call_count := [0]
     test_signal.add(func(): call_count[0] += 1)
@@ -1309,7 +1309,7 @@ func test_signal_link_to_godot_signal_by_name_emits_with_it() -> TestResult:
     return assert_equal(1, call_count[0])
 
 
-func test_signal_add_by_ref_remove_by_name_removes_link() -> TestResult:
+func test_signal_add_by_ref_remove_by_name_removes_link() -> GDTestResult:
     var test_signal = EasySignal.new_void()
     var godot_signal = Engine.get_main_loop().process_frame
     test_signal.link_to_godot_signal(godot_signal)
@@ -1317,7 +1317,7 @@ func test_signal_add_by_ref_remove_by_name_removes_link() -> TestResult:
     return assert_equal(0, test_signal._godot_builtin_signals_links.size())
 
 
-func test_signal_add_by_name_remove_by_ref_removes_link() -> TestResult:
+func test_signal_add_by_name_remove_by_ref_removes_link() -> GDTestResult:
     var test_signal = EasySignal.new_void()
     test_signal.link_to_godot_signal_by_name(Engine.get_main_loop(), "process_frame")
     var godot_signal = Engine.get_main_loop().process_frame
@@ -1325,7 +1325,7 @@ func test_signal_add_by_name_remove_by_ref_removes_link() -> TestResult:
     return assert_equal(0, test_signal._godot_builtin_signals_links.size())
 
 
-func test_signal_disconnect_from_godot_signal_removes_link_from_internal_list() -> TestResult:
+func test_signal_disconnect_from_godot_signal_removes_link_from_internal_list() -> GDTestResult:
     var test_signal = EasySignal.new_void()
     var godot_signal = Engine.get_main_loop().process_frame
     test_signal.link_to_godot_signal(godot_signal)
@@ -1333,14 +1333,14 @@ func test_signal_disconnect_from_godot_signal_removes_link_from_internal_list() 
     return assert_equal(0, test_signal._godot_builtin_signals_links.size())
 
 
-func test_signal_disconnect_from_godot_signal_by_name_removes_link_from_internal_list() -> TestResult:
+func test_signal_disconnect_from_godot_signal_by_name_removes_link_from_internal_list() -> GDTestResult:
     var test_signal = EasySignal.new_void()
     test_signal.link_to_godot_signal_by_name(Engine.get_main_loop(), "process_frame")
     test_signal.disconnect_from_godot_signal_by_name(Engine.get_main_loop(), "process_frame")
     return assert_equal(0, test_signal._godot_builtin_signals_links.size())
 
 
-func test_signal_disconnect_from_godot_signal_stops_emitting_with_it() -> TestResult:
+func test_signal_disconnect_from_godot_signal_stops_emitting_with_it() -> GDTestResult:
     var test_signal = EasySignal.new_void()
     var call_count := [0]
     test_signal.add(func(): call_count[0] += 1)
@@ -1351,7 +1351,7 @@ func test_signal_disconnect_from_godot_signal_stops_emitting_with_it() -> TestRe
     return assert_equal(0, call_count[0])
 
 
-func test_signal_disconnect_from_godot_signal_by_name_stops_emitting_with_it() -> TestResult:
+func test_signal_disconnect_from_godot_signal_by_name_stops_emitting_with_it() -> GDTestResult:
     var test_signal = EasySignal.new_void()
     var call_count := [0]
     test_signal.add(func(): call_count[0] += 1)
@@ -1361,14 +1361,14 @@ func test_signal_disconnect_from_godot_signal_by_name_stops_emitting_with_it() -
     return assert_equal(0, call_count[0])
 
 
-func test_signal_disconnect_from_all_godot_signals_removes_all_links_from_internal_list() -> TestResult:
+func test_signal_disconnect_from_all_godot_signals_removes_all_links_from_internal_list() -> GDTestResult:
     var test_signal = EasySignal.new_void()
     test_signal.link_to_godot_signal(Engine.get_main_loop().process_frame)
     test_signal.disconnect_from_all_godot_signals()
     return assert_equal(0, test_signal._godot_builtin_signals_links.size())
 
 
-func test_signal_disconnect_from_all_godot_signals_stops_emitting_linked_by_ref() -> TestResult:
+func test_signal_disconnect_from_all_godot_signals_stops_emitting_linked_by_ref() -> GDTestResult:
     var test_signal = EasySignal.new_void()
     var call_count := [0]
     test_signal.add(func(): call_count[0] += 1)
@@ -1379,7 +1379,7 @@ func test_signal_disconnect_from_all_godot_signals_stops_emitting_linked_by_ref(
     return assert_equal(0, call_count[0])
 
 
-func test_signal_disconnect_from_all_godot_signals_stops_emitting_linked_by_name() -> TestResult:
+func test_signal_disconnect_from_all_godot_signals_stops_emitting_linked_by_name() -> GDTestResult:
     var test_signal = EasySignal.new_void()
     var call_count := [0]
     test_signal.add(func(): call_count[0] += 1)
@@ -1389,7 +1389,7 @@ func test_signal_disconnect_from_all_godot_signals_stops_emitting_linked_by_name
     return assert_equal(0, call_count[0])
 
 
-func test_signal_link_to_godot_signal_integration_with_button_node() -> TestResult:
+func test_signal_link_to_godot_signal_integration_with_button_node() -> GDTestResult:
     var test_signal = EasySignal.new_void()
     var call_count := [0]
     var button_node = Button.new()
@@ -1408,7 +1408,7 @@ func test_signal_link_to_godot_signal_integration_with_button_node() -> TestResu
 # ===============================
 
 
-func test_find_returns_subscriber_for_existing_callback() -> TestResult:
+func test_find_returns_subscriber_for_existing_callback() -> GDTestResult:
     var test_signal = EasySignal.new_void()
     var callback := func(): pass
 
@@ -1421,7 +1421,7 @@ func test_find_returns_subscriber_for_existing_callback() -> TestResult:
     return pass_test()
 
 
-func test_find_returns_null_for_nonexistent_callback() -> TestResult:
+func test_find_returns_null_for_nonexistent_callback() -> GDTestResult:
     var test_signal = EasySignal.new_void()
     var callback := func(): pass
 
@@ -1433,7 +1433,7 @@ func test_find_returns_null_for_nonexistent_callback() -> TestResult:
     return pass_test()
 
 
-func test_find_distinguishes_between_different_callbacks() -> TestResult:
+func test_find_distinguishes_between_different_callbacks() -> GDTestResult:
     var test_signal = EasySignal.new_void()
     var callback1 := func(): pass
     var callback2 := func(): pass
@@ -1449,7 +1449,7 @@ func test_find_distinguishes_between_different_callbacks() -> TestResult:
     return pass_test()
 
 
-func test_validate_payload_accepts_valid_payload() -> TestResult:
+func test_validate_payload_accepts_valid_payload() -> GDTestResult:
     var test_signal = EasySignal.new([TYPE_INT, TYPE_STRING])
     var payload = [42, "hello"]
 
@@ -1461,7 +1461,7 @@ func test_validate_payload_accepts_valid_payload() -> TestResult:
     return pass_test()
 
 
-func test_validate_payload_rejects_wrong_argument_count() -> TestResult:
+func test_validate_payload_rejects_wrong_argument_count() -> GDTestResult:
     var test_signal = EasySignal.new([TYPE_INT, TYPE_STRING])
     var payload = [42]  # Missing second argument
 
@@ -1475,7 +1475,7 @@ func test_validate_payload_rejects_wrong_argument_count() -> TestResult:
     return pass_test()
 
 
-func test_validate_payload_rejects_wrong_type() -> TestResult:
+func test_validate_payload_rejects_wrong_type() -> GDTestResult:
     var test_signal = EasySignal.new([TYPE_INT, TYPE_STRING])
     var payload = ["hello", 42]  # Types swapped
 
@@ -1489,7 +1489,7 @@ func test_validate_payload_rejects_wrong_type() -> TestResult:
     return pass_test()
 
 
-func test_validate_payload_accepts_variant_types() -> TestResult:
+func test_validate_payload_accepts_variant_types() -> GDTestResult:
     var test_signal = EasySignal.new_untyped()
     var payload = [42]
 
@@ -1506,7 +1506,7 @@ func test_validate_payload_accepts_variant_types() -> TestResult:
 # ===============================
 
 
-func test_add_null_callback_rejected() -> TestResult:
+func test_add_null_callback_rejected() -> GDTestResult:
     var test_signal = EasySignal.new_void()
     var callback: Callable = Callable()  # Null callable
 
@@ -1518,7 +1518,7 @@ func test_add_null_callback_rejected() -> TestResult:
     return pass_test()
 
 
-func test_add_invalid_callback_rejected() -> TestResult:
+func test_add_invalid_callback_rejected() -> GDTestResult:
     var test_signal = EasySignal.new(TYPE_INT)
     var obj = RefCounted.new()
     var callback = Callable(obj, "nonexistent_method")
@@ -1532,7 +1532,7 @@ func test_add_invalid_callback_rejected() -> TestResult:
     return pass_test()
 
 
-func test_add_callback_with_wrong_argument_count() -> TestResult:
+func test_add_callback_with_wrong_argument_count() -> GDTestResult:
     var test_signal = EasySignal.new_typed("int", "float")
     # Lambda with 1 argument when signal expects 2
     var callback := func(_arg1): pass
@@ -1548,7 +1548,7 @@ func test_add_callback_with_wrong_argument_count() -> TestResult:
 # ===============================
 
 
-func test_link_to_godot_signal_with_null_source_rejected() -> TestResult:
+func test_link_to_godot_signal_with_null_source_rejected() -> GDTestResult:
     var test_signal = EasySignal.new_void()
 
     # Should handle null gracefully
@@ -1558,7 +1558,7 @@ func test_link_to_godot_signal_with_null_source_rejected() -> TestResult:
     return assert_equal(0, test_signal._godot_builtin_signals_links.size())
 
 
-func test_link_to_godot_signal_with_empty_signal_name_rejected() -> TestResult:
+func test_link_to_godot_signal_with_empty_signal_name_rejected() -> GDTestResult:
     var test_signal = EasySignal.new_void()
 
     test_signal.link_to_godot_signal_by_name(Engine.get_main_loop(), "")
@@ -1567,7 +1567,7 @@ func test_link_to_godot_signal_with_empty_signal_name_rejected() -> TestResult:
     return assert_equal(0, test_signal._godot_builtin_signals_links.size())
 
 
-func test_link_to_same_godot_signal_twice_does_not_duplicate() -> TestResult:
+func test_link_to_same_godot_signal_twice_does_not_duplicate() -> GDTestResult:
     var test_signal = EasySignal.new_void()
     var godot_signal = Engine.get_main_loop().process_frame
 
@@ -1583,7 +1583,7 @@ func test_link_to_same_godot_signal_twice_does_not_duplicate() -> TestResult:
     return result
 
 
-func test_disconnect_from_godot_signal_that_was_never_connected() -> TestResult:
+func test_disconnect_from_godot_signal_that_was_never_connected() -> GDTestResult:
     var test_signal = EasySignal.new_void()
     var godot_signal = Engine.get_main_loop().process_frame
 
@@ -1600,7 +1600,7 @@ func test_disconnect_from_godot_signal_that_was_never_connected() -> TestResult:
 # ===============================
 
 
-func test_subscriber_get_target_object_returns_correct_object() -> TestResult:
+func test_subscriber_get_target_object_returns_correct_object() -> GDTestResult:
     var test_signal = EasySignal.new_typed("bool")
     var test_obj = Node.new()
     var callback = Callable(test_obj, "set_process")
@@ -1615,7 +1615,7 @@ func test_subscriber_get_target_object_returns_correct_object() -> TestResult:
     return assert_true(object_if_correct, "Expected get_target_object() to return the callback's object")
 
 
-func test_subscriber_get_target_object_for_lambda_has_correct_metadata() -> TestResult:
+func test_subscriber_get_target_object_for_lambda_has_correct_metadata() -> GDTestResult:
     var test_signal = EasySignal.new_void()
     var subscriber = test_signal.add(func(): pass)
 
@@ -1633,7 +1633,7 @@ func test_subscriber_get_target_object_for_lambda_has_correct_metadata() -> Test
 # ===============================
 
 
-func test_calling_once_multiple_times_last_wins() -> TestResult:
+func test_calling_once_multiple_times_last_wins() -> GDTestResult:
     var test_signal = EasySignal.new_void()
     var call_count := [0]
     var callback := func(): call_count[0] += 1
@@ -1651,7 +1651,7 @@ func test_calling_once_multiple_times_last_wins() -> TestResult:
     return pass_test()
 
 
-func test_calling_limited_to_multiple_times_last_wins() -> TestResult:
+func test_calling_limited_to_multiple_times_last_wins() -> GDTestResult:
     var test_signal = EasySignal.new_void()
     var call_count := [0]
     var callback := func(): call_count[0] += 1
@@ -1669,7 +1669,7 @@ func test_calling_limited_to_multiple_times_last_wins() -> TestResult:
     return pass_test()
 
 
-func test_changing_delay_type_multiple_times_last_wins() -> TestResult:
+func test_changing_delay_type_multiple_times_last_wins() -> GDTestResult:
     var test_signal = EasySignal.new_void()
     var callback := func(): pass
 
@@ -1686,7 +1686,7 @@ func test_changing_delay_type_multiple_times_last_wins() -> TestResult:
     return pass_test()
 
 
-func test_negative_delay_frames() -> TestResult:
+func test_negative_delay_frames() -> GDTestResult:
     var test_signal = EasySignal.new_void()
     var call_count := [0]
     var callback := func(): call_count[0] += 1
@@ -1709,7 +1709,7 @@ func test_negative_delay_frames() -> TestResult:
 # ===============================
 
 
-func test_adding_subscriber_during_emission() -> TestResult:
+func test_adding_subscriber_during_emission() -> GDTestResult:
     var test_signal = EasySignal.new_void()
     var call_count := [0]
     var second_callback := func():
@@ -1739,7 +1739,7 @@ func test_adding_subscriber_during_emission() -> TestResult:
     return pass_test()
 
 
-func test_removing_subscriber_during_emission() -> TestResult:
+func test_removing_subscriber_during_emission() -> GDTestResult:
     var test_signal = EasySignal.new_void()
     var call_count := [0]
     var second_callback := func(): call_count[0] += 100
@@ -1763,7 +1763,7 @@ func test_removing_subscriber_during_emission() -> TestResult:
     return pass_test()
 
 
-func test_recursive_emission() -> TestResult:
+func test_recursive_emission() -> GDTestResult:
     var test_signal = EasySignal.new(TYPE_INT)
     var call_count := [0]
 
@@ -1788,7 +1788,7 @@ func test_recursive_emission() -> TestResult:
 # ===============================
 
 
-func test_target_object_freed_during_delay() -> TestResult:
+func test_target_object_freed_during_delay() -> GDTestResult:
     var test_signal = EasySignal.new_typed("bool")
     var call_count := [0]
     var obj = Node.new()
@@ -1811,7 +1811,7 @@ func test_target_object_freed_during_delay() -> TestResult:
     return assert_equal(1, call_count[0])
 
 
-func test_dispose_prevents_delayed_invocation() -> TestResult:
+func test_dispose_prevents_delayed_invocation() -> GDTestResult:
     var test_signal = EasySignal.new_void()
     var call_count := [0]
     var callback := func(): call_count[0] += 1
@@ -1833,7 +1833,7 @@ func test_dispose_prevents_delayed_invocation() -> TestResult:
     return pass_test()
 
 
-func test_is_orphaned_detects_null_callable() -> TestResult:
+func test_is_orphaned_detects_null_callable() -> GDTestResult:
     var test_signal = EasySignal.new_void()
     var callback := func(): pass
 
@@ -1846,7 +1846,7 @@ func test_is_orphaned_detects_null_callable() -> TestResult:
     return pass_test()
 
 
-func test_purge_orphaned_subscribers_removes_orphaned_subscribers() -> TestResult:
+func test_purge_orphaned_subscribers_removes_orphaned_subscribers() -> GDTestResult:
     var test_signal = EasySignal.new_void()
     var call_count := [0]
     var test_node = Node.new()
@@ -1885,7 +1885,7 @@ func test_purge_orphaned_subscribers_removes_orphaned_subscribers() -> TestResul
 # ===============================
 
 
-func test_priority_ties_maintain_add_order() -> TestResult:
+func test_priority_ties_maintain_add_order() -> GDTestResult:
     var test_signal = EasySignal.new_void()
     var results: Array[int] = []
 
@@ -1907,7 +1907,7 @@ func test_priority_ties_maintain_add_order() -> TestResult:
     return pass_test()
 
 
-func test_extreme_priority_values() -> TestResult:
+func test_extreme_priority_values() -> GDTestResult:
     var test_signal = EasySignal.new_void()
     var results: Array[int] = []
 
@@ -1933,7 +1933,7 @@ func test_extreme_priority_values() -> TestResult:
 # ===============================
 
 
-func test_complex_chaining_all_fluent_methods() -> TestResult:
+func test_complex_chaining_all_fluent_methods() -> GDTestResult:
     var test_signal = EasySignal.new(TYPE_INT)
     var received_values: Array[int] = []
     var callback := func(val: int): received_values.append(val)
@@ -1954,7 +1954,7 @@ func test_complex_chaining_all_fluent_methods() -> TestResult:
     return pass_test()
 
 
-func test_emit_typed_signal_with_multiple_argument_types() -> TestResult:
+func test_emit_typed_signal_with_multiple_argument_types() -> GDTestResult:
     var test_signal = EasySignal.new([TYPE_INT, TYPE_STRING, TYPE_BOOL, TYPE_VECTOR2])
     var received_args: Array = [null, null, null, null]
     var callback := func(a: int, b: String, c: bool, d: Vector2):
@@ -1983,7 +1983,7 @@ func test_emit_typed_signal_with_multiple_argument_types() -> TestResult:
 # ===============================
 
 
-func test_emit_after_frames_basic() -> TestResult:
+func test_emit_after_frames_basic() -> GDTestResult:
     var test_signal = EasySignal.new_void()
     var call_count := [0]
 
@@ -2006,7 +2006,7 @@ func test_emit_after_frames_basic() -> TestResult:
     return pass_test()
 
 
-func test_emit_after_frames_with_payload() -> TestResult:
+func test_emit_after_frames_with_payload() -> GDTestResult:
     var test_signal = EasySignal.new_typed("int")
     var received_args: Array = []
     var callback := func(a: int): received_args.append(a)
@@ -2031,7 +2031,7 @@ func test_emit_after_frames_with_payload() -> TestResult:
     return pass_test()
 
 
-func test_emit_after_frames_disabled_does_not_emit() -> TestResult:
+func test_emit_after_frames_disabled_does_not_emit() -> GDTestResult:
     var test_signal = EasySignal.new_void()
     var call_count := [0]
     var callback := func(): call_count[0] += 1
@@ -2053,7 +2053,7 @@ func test_emit_after_frames_disabled_does_not_emit() -> TestResult:
     return pass_test()
 
 
-func test_emit_after_frames_add_subscriber_during_delay() -> TestResult:
+func test_emit_after_frames_add_subscriber_during_delay() -> GDTestResult:
     var test_signal = EasySignal.new_void()
     var call_count1 := [0]
     var call_count2 := [0]
@@ -2082,7 +2082,7 @@ func test_emit_after_frames_add_subscriber_during_delay() -> TestResult:
     return pass_test()
 
 
-func test_emit_after_frames_remove_subscriber_during_delay() -> TestResult:
+func test_emit_after_frames_remove_subscriber_during_delay() -> GDTestResult:
     var test_signal = EasySignal.new_void()
     var call_count := [0]
     var callback := func(): call_count[0] += 1
@@ -2107,7 +2107,7 @@ func test_emit_after_frames_remove_subscriber_during_delay() -> TestResult:
     return pass_test()
 
 
-func test_emit_after_frames_multiple_delays() -> TestResult:
+func test_emit_after_frames_multiple_delays() -> GDTestResult:
     var test_signal = EasySignal.new(TYPE_INT)
     var received_values: Array[int] = []
     var callback := func(val: int): received_values.append(val)
@@ -2135,7 +2135,7 @@ func test_emit_after_frames_multiple_delays() -> TestResult:
 # ===============================
 
 
-func test_emit_after_physics_frames_basic() -> TestResult:
+func test_emit_after_physics_frames_basic() -> GDTestResult:
     var test_signal = EasySignal.new_void()
     var call_count := [0]
     var callback := func(): call_count[0] += 1
@@ -2163,7 +2163,7 @@ func test_emit_after_physics_frames_basic() -> TestResult:
     return pass_test()
 
 
-func test_emit_after_physics_frames_with_payload() -> TestResult:
+func test_emit_after_physics_frames_with_payload() -> GDTestResult:
     var test_signal = EasySignal.new([TYPE_FLOAT, TYPE_BOOL])
     var received_args: Array = []
     var callback := func(a: float, b: bool): received_args.append([a, b])
@@ -2190,7 +2190,7 @@ func test_emit_after_physics_frames_with_payload() -> TestResult:
     return pass_test()
 
 
-func test_emit_after_physics_frames_disabled_does_not_emit() -> TestResult:
+func test_emit_after_physics_frames_disabled_does_not_emit() -> GDTestResult:
     var test_signal = EasySignal.new_void()
     var call_count := [0]
     var callback := func(): call_count[0] += 1
@@ -2212,7 +2212,7 @@ func test_emit_after_physics_frames_disabled_does_not_emit() -> TestResult:
     return pass_test()
 
 
-func test_emit_after_physics_frames_add_subscriber_during_delay() -> TestResult:
+func test_emit_after_physics_frames_add_subscriber_during_delay() -> GDTestResult:
     var test_signal = EasySignal.new_void()
     var call_count1 := [0]
     var call_count2 := [0]
@@ -2241,7 +2241,7 @@ func test_emit_after_physics_frames_add_subscriber_during_delay() -> TestResult:
     return pass_test()
 
 
-func test_emit_after_physics_frames_remove_subscriber_during_delay() -> TestResult:
+func test_emit_after_physics_frames_remove_subscriber_during_delay() -> GDTestResult:
     var test_signal = EasySignal.new_void()
     var call_count := [0]
     var callback := func(): call_count[0] += 1
@@ -2266,7 +2266,7 @@ func test_emit_after_physics_frames_remove_subscriber_during_delay() -> TestResu
     return pass_test()
 
 
-func test_emit_after_physics_frames_multiple_delays() -> TestResult:
+func test_emit_after_physics_frames_multiple_delays() -> GDTestResult:
     var test_signal = EasySignal.new(TYPE_STRING)
     var received_values: Array[String] = []
     var callback := func(val: String): received_values.append(val)
@@ -2294,7 +2294,7 @@ func test_emit_after_physics_frames_multiple_delays() -> TestResult:
 # ===============================
 
 
-func test_emit_after_ms_basic() -> TestResult:
+func test_emit_after_ms_basic() -> GDTestResult:
     var test_signal = EasySignal.new_void()
     var call_count := [0]
     var callback := func(): call_count[0] += 1
@@ -2321,7 +2321,7 @@ func test_emit_after_ms_basic() -> TestResult:
     return pass_test()
 
 
-func test_emit_after_ms_with_payload() -> TestResult:
+func test_emit_after_ms_with_payload() -> GDTestResult:
     var test_signal = EasySignal.new([TYPE_STRING, TYPE_VECTOR2])
     var received_args: Array = []
     var callback := func(a: String, b: Vector2): received_args.append([a, b])
@@ -2347,7 +2347,7 @@ func test_emit_after_ms_with_payload() -> TestResult:
     return pass_test()
 
 
-func test_emit_after_ms_disabled_does_not_emit() -> TestResult:
+func test_emit_after_ms_disabled_does_not_emit() -> GDTestResult:
     var test_signal = EasySignal.new_void()
     var call_count := [0]
     var callback := func(): call_count[0] += 1
@@ -2368,7 +2368,7 @@ func test_emit_after_ms_disabled_does_not_emit() -> TestResult:
     return pass_test()
 
 
-func test_emit_after_ms_add_subscriber_during_delay() -> TestResult:
+func test_emit_after_ms_add_subscriber_during_delay() -> GDTestResult:
     var test_signal = EasySignal.new_void()
     var call_count1 := [0]
     var call_count2 := [0]
@@ -2396,7 +2396,7 @@ func test_emit_after_ms_add_subscriber_during_delay() -> TestResult:
     return pass_test()
 
 
-func test_emit_after_ms_remove_subscriber_during_delay() -> TestResult:
+func test_emit_after_ms_remove_subscriber_during_delay() -> GDTestResult:
     var test_signal = EasySignal.new_void()
     var call_count := [0]
     var callback := func(): call_count[0] += 1
@@ -2420,7 +2420,7 @@ func test_emit_after_ms_remove_subscriber_during_delay() -> TestResult:
     return pass_test()
 
 
-func test_emit_after_ms_multiple_delays() -> TestResult:
+func test_emit_after_ms_multiple_delays() -> GDTestResult:
     var test_signal = EasySignal.new(TYPE_INT)
     var received_values: Array[int] = []
     var callback := func(val: int): received_values.append(val)
@@ -2442,7 +2442,7 @@ func test_emit_after_ms_multiple_delays() -> TestResult:
     return pass_test()
 
 
-func test_emit_after_ms_timing_precision() -> TestResult:
+func test_emit_after_ms_timing_precision() -> GDTestResult:
     var test_signal = EasySignal.new_void()
     var call_time := [0.0]
     var start_time := Time.get_ticks_msec()
@@ -2461,7 +2461,7 @@ func test_emit_after_ms_timing_precision() -> TestResult:
     return pass_test()
 
 
-func test_emit_after_frames_disabled_then_re_enabled_during_delay() -> TestResult:
+func test_emit_after_frames_disabled_then_re_enabled_during_delay() -> GDTestResult:
     var test_signal = EasySignal.new_void()
     var call_count := [0]
     var callback := func(): call_count[0] += 1
@@ -2487,7 +2487,7 @@ func test_emit_after_frames_disabled_then_re_enabled_during_delay() -> TestResul
     return pass_test()
 
 
-func test_emit_after_all_three_methods_together() -> TestResult:
+func test_emit_after_all_three_methods_together() -> GDTestResult:
     var test_signal = EasySignal.new(TYPE_STRING)
     var received_values: Array[String] = []
     var callback := func(val: String): received_values.append(val)
@@ -2519,7 +2519,7 @@ func test_emit_after_all_three_methods_together() -> TestResult:
     return pass_test()
 
 
-func test_emit_after_frames_with_delayed_subscriber_double_delay() -> TestResult:
+func test_emit_after_frames_with_delayed_subscriber_double_delay() -> GDTestResult:
     var test_signal = EasySignal.new_void()
     var call_count := [0]
 
@@ -2552,7 +2552,7 @@ func test_emit_after_frames_with_delayed_subscriber_double_delay() -> TestResult
     return pass_test()
 
 
-func test_emit_after_frames_disabled_does_not_queue() -> TestResult:
+func test_emit_after_frames_disabled_does_not_queue() -> GDTestResult:
     var test_signal = EasySignal.new_void()
     var call_count := [0]
     var callback := func(): call_count[0] += 1
@@ -2567,7 +2567,7 @@ func test_emit_after_frames_disabled_does_not_queue() -> TestResult:
     return assert_equal(call_count[0], 0)
 
 
-func test_emit_after_frames_disabled_then_reenabled_emits() -> TestResult:
+func test_emit_after_frames_disabled_then_reenabled_emits() -> GDTestResult:
     var test_signal = EasySignal.new_void()
     var call_count := [0]
     var callback := func(): call_count[0] += 1
